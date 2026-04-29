@@ -1,10 +1,10 @@
-name: TovPlay Outreach Pipeline
+name: Outreach Pipeline
 
 on:
   schedule:
-    # Primary: 07:23 UTC (10:23 Israel time)
+    # Primary: 07:23 UTC
     - cron: '23 7 * * 1-5'
-    # Backup: 11:47 UTC (14:47 Israel time) — runs only if primary was skipped by GitHub
+    # Backup: 11:47 UTC — runs only if primary was skipped by GitHub
     # Idempotency check in step6 prevents double-sending
     - cron: '47 11 * * 1-5'
   workflow_dispatch:
@@ -55,7 +55,7 @@ jobs:
         run: |
           echo '${{ secrets.GMAIL_TOKEN_JSON }}' > pipeline/token.json
 
-      - name: Step 6 — Send emails (Erasmus+, 12 initial, no follow-ups)
+      - name: Step 6 — Send emails (main campaign)
         id: step6
         if: ${{ github.event.inputs.mode != 'step7-only' && github.event.inputs.mode != 'dry-run' }}
         env:
@@ -65,14 +65,15 @@ jobs:
           cd pipeline
           python step6_send_emails.py
 
-      - name: Step 6 — Sal Shikum campaign (12 initial/day)
-        if: ${{ github.event.inputs.mode != 'step7-only' && github.event.inputs.mode != 'dry-run' }}
-        env:
-          SENDER_EMAIL:      ${{ secrets.SENDER_EMAIL }}
-          TRACKING_BASE_URL: ${{ secrets.TRACKING_BASE_URL }}
-        run: |
-          cd pipeline
-          python step6_send_emails.py --campaign sal_shikum_tovtech
+      # To add more campaigns, duplicate the step above and add --campaign <name>:
+      # - name: Step 6 — My campaign
+      #   if: ${{ github.event.inputs.mode != 'step7-only' && github.event.inputs.mode != 'dry-run' }}
+      #   env:
+      #     SENDER_EMAIL:      ${{ secrets.SENDER_EMAIL }}
+      #     TRACKING_BASE_URL: ${{ secrets.TRACKING_BASE_URL }}
+      #   run: |
+      #     cd pipeline
+      #     python step6_send_emails.py --campaign my_campaign
 
       - name: Step 6 — Dry run preview
         if: ${{ github.event.inputs.mode == 'dry-run' }}
@@ -82,7 +83,6 @@ jobs:
         run: |
           cd pipeline
           python step6_send_emails.py --dry-run
-          python step6_send_emails.py --campaign sal_shikum_tovtech --dry-run
 
       - name: Daily summary email
         if: always() && steps.step6.outputs.had_activity != 'false'

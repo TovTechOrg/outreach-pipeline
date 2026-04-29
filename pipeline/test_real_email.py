@@ -1,5 +1,5 @@
 """
-Send a realistic production-quality test email to hrazhadas@gmail.com.
+Send a realistic production-quality test email to your-notify@email.com.
 Uses exact same build_email + make_gmail_message as step6, with real org data.
 """
 import sys, os
@@ -11,7 +11,7 @@ from step6_send_emails import (
 )
 from gmail_auth import get_gmail_service
 
-TEST_TO = "hrazhadas@gmail.com"
+TEST_TO = "your-notify@email.com"
 
 # Real Tier1 org data — exactly as step6 would process it
 contact = {

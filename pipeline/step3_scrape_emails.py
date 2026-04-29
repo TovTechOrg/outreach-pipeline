@@ -33,7 +33,7 @@ EMAIL_RE = re.compile(r'[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}')
 
 # Email fragments that indicate a good/relevant contact
 PREFERRED_PREFIXES = [
-    "erasmus", "coordinator", "director", "manager", "info",
+    "coordinator", "director", "manager", "info",
     "contact", "office", "admin", "project", "education",
 ]
 

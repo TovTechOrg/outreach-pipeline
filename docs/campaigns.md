@@ -6,7 +6,7 @@ The pipeline supports multiple named campaigns running in parallel, each with is
 
 ## Default campaign
 
-The default campaign is named `erasmus` and targets Erasmus+ organizations. All scripts use it unless `--campaign` is passed.
+The default campaign is named `main`. All scripts use it unless `--campaign` is passed.
 
 ---
 
@@ -104,7 +104,7 @@ In `cloudflare/functions/api/stats.js`, add your campaign to `CAMPAIGN_COLLECTIO
 
 ```javascript
 const CAMPAIGN_COLLECTIONS = {
-  erasmus:     { stats: 'stats/global',             daily: 'stats_daily',             events: 'events' },
+  main:        { stats: 'stats/global',             daily: 'stats_daily',             events: 'events' },
   my_campaign: { stats: 'my_campaign_stats/global', daily: 'my_campaign_stats_daily', events: 'my_campaign_events' },
 }
 ```
@@ -121,7 +121,7 @@ Your campaign now appears in the dashboard campaign switcher.
 
 ## Multi-tier campaigns
 
-The default Erasmus+ campaign uses three tiers with different email content and sequence lengths:
+The default `main` campaign uses three tiers with different email content and sequence lengths:
 
 | Tier | Emails in sequence | Personalization |
 |------|---|---|

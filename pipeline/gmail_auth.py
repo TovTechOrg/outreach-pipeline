@@ -11,7 +11,7 @@ Setup steps:
   5. Application type: Desktop app → Create
   6. Download JSON → save as: pipeline/credentials.json
   7. Run: py gmail_auth.py
-  8. Browser opens → sign in with raz@tovplay.org → click Allow
+  8. Browser opens → sign in with your@email.com → click Allow
   9. token.json is saved → all future runs are 100% automatic
 
 Usage from other scripts:

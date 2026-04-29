@@ -8,12 +8,13 @@ Interactive setup wizard for the BizDev Outreach Pipeline. Guides you through ev
 
 Walks you through the complete one-time setup:
 1. Collect your project details (org name, sender email, etc.)
-2. Gmail API — OAuth2 credentials and token
-3. Firebase — project creation and service account
-4. Google Gemini — API key for AI personalization
-5. Cloudflare Pages — dashboard deployment
-6. GitHub Actions — secrets for daily automation
-7. First pipeline run — verify everything works
+2. **Campaign brief** — understand your audience and auto-generate matching email templates
+3. Gmail API — OAuth2 credentials and token
+4. Firebase — project creation and service account
+5. Google Gemini — API key for AI personalization
+6. Cloudflare Pages — dashboard deployment
+7. GitHub Actions — secrets for daily automation
+8. First pipeline run — verify everything works
 
 ---
 
@@ -38,7 +39,47 @@ Wait for the user to answer. Save all answers as variables for later steps. Then
 
 ---
 
-## Step 1 — Update config.py
+## Step 1 — Campaign brief
+
+Ask the user to describe their campaign so you can generate appropriate email templates. Ask all questions at once:
+
+> To build your email templates I need to understand your campaign:
+>
+> 1. **What are you offering?** (e.g. a course, a service, a tool, a product — one sentence)
+> 2. **Who are you targeting?** (e.g. NGOs in Europe, rehab centers in Israel, SaaS companies in the US)
+> 3. **What's the main benefit for them?** (what problem does it solve, or what value does it add?)
+> 4. **What's your ask?** (e.g. 15-min call, demo, pilot, just awareness)
+> 5. **Do you have 3 tiers of relevance in your prospect list?**
+>    - If yes: briefly describe what makes Tier 1 (highest fit) different from Tier 2 and Tier 3
+>    - If no: describe a single audience and I'll generate one email sequence
+> 6. **Language?** (English, Hebrew, other — or mixed per tier?)
+> 7. **Tone?** (formal / conversational / warm)
+>
+> The more detail you give, the better the templates.
+
+Wait for the user's answers. Then use their answers to:
+
+**A) Generate email templates** — write or rewrite `templates/email_tier1.md`, `templates/email_tier2.md`, `templates/email_tier3.md` with real copy tailored to their campaign. Each template should have:
+- A subject line
+- Full email body (initial outreach)
+- Follow-up 1 (shorter, builds on initial)
+- Follow-up 2 (softer, adds new angle)
+- Breakup email (last touch, no-pressure)
+
+Replace placeholder text with actual copy based on the campaign brief. Make it sound natural and specific, not generic.
+
+**B) Update `pipeline/step4_generate_output.py`** — rewrite `TEMPLATE_HINTS` dict with their actual campaign angles, CTAs, and hooks for each tier.
+
+**C) Update `pipeline/step6_send_emails.py`** — find the `get_email_content()` function and replace the placeholder comments with real email copy from the templates you just wrote.
+
+After writing the templates, show the user the Tier 1 initial email as a preview and ask:
+> Here's your Tier 1 initial email — does this feel right? Any changes to tone, length, or angle before we continue?
+
+Revise based on feedback, then move to Step 2.
+
+---
+
+## Step 2 — Update config.py
 
 Once you have the user's details, edit `pipeline/config.py`:
 
@@ -356,7 +397,7 @@ gh run watch
 ```
 
 **If not:**
-> In your GitHub repo → **Actions** tab → **"TovPlay Outreach Pipeline"** → **Run workflow** → mode: `dry-run` → **Run workflow**. Tell me when it shows a green checkmark.
+> In your GitHub repo → **Actions** tab → **"Outreach Pipeline"** → **Run workflow** → mode: `dry-run` → **Run workflow**. Tell me when it shows a green checkmark.
 
 > ✓ GitHub Actions configured. Pipeline runs automatically on weekdays at 07:23 UTC and 11:47 UTC.
 

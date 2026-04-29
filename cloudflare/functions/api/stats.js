@@ -1,30 +1,34 @@
 /**
- * GET /api/stats?campaign=erasmus|sal_shikum_tovplay|sal_shikum_tovtech
+ * GET /api/stats?campaign=main|my_campaign
  * Returns campaign statistics from Firebase.
  *
  * Campaign routing:
- *   erasmus (default)    → stats/global, stats_daily/{date}, events
- *   sal_shikum_tovplay   → sal_shikum_tovplay_stats/global, ...
- *   sal_shikum_tovtech   → sal_shikum_tovtech_stats/global, ...
+ *   main (default)   → stats/global, stats_daily/{date}, events
+ *   my_campaign      → my_campaign_stats/global, my_campaign_stats_daily, my_campaign_events
+ *
+ * To add a new campaign: add an entry to CAMPAIGN_COLLECTIONS below,
+ * following the naming pattern. Then redeploy the dashboard.
  */
 
 import { initDB } from '../_lib/firebase.js'
 
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' }
 
-// Campaign-specific collection names
+// Campaign-specific collection names.
+// Add entries here when you create new campaigns.
+// Pattern: { stats: '<campaign>_stats/global', daily: '<campaign>_stats_daily', events: '<campaign>_events' }
 const CAMPAIGN_COLLECTIONS = {
-  erasmus:             { stats: 'stats/global',                        daily: 'stats_daily',                        events: 'events' },
-  sal_shikum_tovplay:  { stats: 'sal_shikum_tovplay_stats/global',     daily: 'sal_shikum_tovplay_stats_daily',     events: 'sal_shikum_tovplay_events' },
-  sal_shikum_tovtech:  { stats: 'sal_shikum_tovtech_stats/global',     daily: 'sal_shikum_tovtech_stats_daily',     events: 'sal_shikum_tovtech_events' },
+  main: { stats: 'stats/global', daily: 'stats_daily', events: 'events' },
+  // Example: add your custom campaign below:
+  // my_campaign: { stats: 'my_campaign_stats/global', daily: 'my_campaign_stats_daily', events: 'my_campaign_events' },
 }
 
 export async function onRequestGet({ request, env }) {
   try {
     const db = await initDB(env)
     const url = new URL(request.url)
-    const campaign = url.searchParams.get('campaign') || 'erasmus'
-    const cols = CAMPAIGN_COLLECTIONS[campaign] || CAMPAIGN_COLLECTIONS.erasmus
+    const campaign = url.searchParams.get('campaign') || 'main'
+    const cols = CAMPAIGN_COLLECTIONS[campaign] || CAMPAIGN_COLLECTIONS.main
 
     // 1. Global totals (1 read — maintained by step6)
     const global = await db.get(cols.stats) || {

@@ -48,11 +48,7 @@ def send_summary(service, db):
     daily   = (db.collection("stats_daily").document(today).get().to_dict() or {})
     totals  = (db.collection("stats").document("global").get().to_dict() or {})
 
-    # ── Sal Shikum stats ───────────────────────────────────────────────────────
-    ss_daily  = (db.collection("sal_shikum_tovtech_stats_daily").document(today).get().to_dict() or {})
-    ss_totals = (db.collection("sal_shikum_tovtech_stats").document("global").get().to_dict() or {})
-
-    # ── Today's email activity (Erasmus+) ──────────────────────────────────────
+    # ── Today's email activity ─────────────────────────────────────────────────
     initial_sent   = daily.get("initial_sent",   0)
     followup1_sent = daily.get("followup1_sent",  0)
     followup2_sent = daily.get("followup2_sent",  0)
@@ -61,12 +57,6 @@ def send_summary(service, db):
     bounced_today  = daily.get("bounced",         0)
     sent_today     = initial_sent + followup1_sent + followup2_sent + followup3_sent
 
-    # ── Today's email activity (Sal Shikum) ────────────────────────────────────
-    ss_initial   = ss_daily.get("initial_sent",  0)
-    ss_replied   = ss_daily.get("replied",        0)
-    ss_bounced   = ss_daily.get("bounced",        0)
-    ss_sent_today = ss_initial
-
     # ── Gemini usage ───────────────────────────────────────────────────────────
     g_in   = daily.get("gemini_input_tokens",  0)
     g_out  = daily.get("gemini_output_tokens", 0)
@@ -74,7 +64,7 @@ def send_summary(service, db):
     g_cost = (g_in / 1_000_000 * GEMINI_INPUT_PRICE) + \
              (g_out / 1_000_000 * GEMINI_OUTPUT_PRICE)
 
-    # ── Cumulative totals (Erasmus+) ───────────────────────────────────────────
+    # ── Cumulative totals ──────────────────────────────────────────────────────
     total_sent    = totals.get("sent",    0)
     total_replied = totals.get("replied", 0)
     total_clicked = totals.get("clicked", 0)
@@ -83,21 +73,15 @@ def send_summary(service, db):
     click_rate    = f"{total_clicked/total_sent*100:.1f}%" if total_sent else "—"
     bounce_rate   = f"{total_bounced/total_sent*100:.1f}%" if total_sent else "—"
 
-    # ── Cumulative totals (Sal Shikum) ─────────────────────────────────────────
-    ss_total_sent    = ss_totals.get("sent",    0)
-    ss_total_replied = ss_totals.get("replied", 0)
-    ss_reply_rate    = f"{ss_total_replied/ss_total_sent*100:.1f}%" if ss_total_sent else "—"
-
     # ── Firebase free tier estimate ────────────────────────────────────────────
-    all_sent_today = sent_today + ss_sent_today
-    est_reads  = daily.get("_est_reads",  all_sent_today * 3 + 50)
-    est_writes = daily.get("_est_writes", all_sent_today * 2 + 10)
+    est_reads  = daily.get("_est_reads",  sent_today * 3 + 50)
+    est_writes = daily.get("_est_writes", sent_today * 2 + 10)
 
-    subject = f"[TovPlay Outreach] Daily report — {today}"
+    subject = f"[Outreach] Daily report — {today}"
 
     body = f"""Daily pipeline run complete — {today}
 
-━━━━━━━━ ERASMUS+ (אירופה) ━━━━━━━━
+━━━━━━━━ TODAY'S ACTIVITY ━━━━━━━━
   Initial emails  : {initial_sent}
   Followup 1      : {followup1_sent}
   Followup 2      : {followup2_sent}
@@ -106,16 +90,6 @@ def send_summary(service, db):
   Total today     : {sent_today}
   New replies     : {replied_today}
   Bounces         : {bounced_today}
-
-━━━━━━━━ סל שיקום (TovTech) ━━━━━━━━
-  Initial emails  : {ss_initial}
-  ─────────────────────────────────
-  Total today     : {ss_sent_today}
-  New replies     : {ss_replied}
-  Bounces         : {ss_bounced}
-
-━━━━━━━━ TOTAL TODAY ━━━━━━━━━━━━━━
-  All emails sent : {all_sent_today}
 
 ━━━━━━━━ GEMINI USAGE TODAY ━━━━━━━━
   API calls       : {g_calls}
@@ -127,15 +101,11 @@ def send_summary(service, db):
   Reads today     : {build_bar(est_reads,  50_000)}
   Writes today    : {build_bar(est_writes, 20_000)}
 
-━━━━━━━━ CUMULATIVE — ERASMUS+ ━━━━
+━━━━━━━━ CUMULATIVE TOTALS ━━━━━━━━
   Sent            : {total_sent:,}
   Replied         : {total_replied:,}  ({reply_rate})
   Clicked         : {total_clicked:,}  ({click_rate})
   Bounced         : {total_bounced:,}  ({bounce_rate})
-
-━━━━━━━━ CUMULATIVE — סל שיקום ━━━━
-  Sent            : {ss_total_sent:,}
-  Replied         : {ss_total_replied:,}  ({ss_reply_rate})
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Dashboard: {TRACKING_BASE}

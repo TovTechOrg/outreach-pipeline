@@ -13,19 +13,17 @@ All tracking data lives in Firebase Firestore (replaces SQLite).
 The dashboard at Cloudflare Pages reads the same Firebase project.
 
 Usage:
-  py step6_send_emails.py                              # normal daily run (Erasmus+ only)
+  py step6_send_emails.py                              # normal daily run (main campaign)
   py step6_send_emails.py --dry-run                    # preview only, no emails sent
   py step6_send_emails.py --tier 1                     # only Tier1 contacts today
   py step6_send_emails.py --limit 10                   # cap at 10 emails this run
   py step6_send_emails.py --check-replies              # only check replies, no sending
-  py step6_send_emails.py --campaign sal_shikum_tovplay   # TovPlay sal shikum campaign
-  py step6_send_emails.py --campaign sal_shikum_tovtech   # TovTech sal shikum campaign
-  py step6_send_emails.py --campaign sal_shikum_tovplay --dry-run  # preview
+  py step6_send_emails.py --campaign my_campaign       # run a custom named campaign
 
 Setup:
   1. py gmail_auth.py                                   (one-time)
   2. Place Firebase service account at: pipeline/firebase-service-account.json
-  3. set SENDER_EMAIL=raz@tovplay.org
+  3. set SENDER_EMAIL=your@email.com
   4. py step6_send_emails.py
 """
 
@@ -60,7 +58,6 @@ from config import (
     FOLLOWUP1_DAYS, FOLLOWUP2_DAYS, FOLLOWUP3_DAYS,
     BOUNCE_SENDERS, BOUNCE_SUBJECTS,
     SIG_FULL, SIG_MID, SIG_SLIM,
-    SIG_HE_FULL, SIG_HE_SLIM, SIG_HE_LAST,
 )
 
 
@@ -86,24 +83,6 @@ def safe_id(s: str) -> str:
     return re.sub(r"[^\w-]", "_", s)[:100]
 
 
-SAL_SHIKUM_TIERS = {"sal_shikum_tovplay", "sal_shikum_tovtech"}
-SAL_SHIKUM_CAMPAIGNS = {"sal_shikum_tovplay", "sal_shikum_tovtech"}
-
-def _is_sal_shikum(tier_or_campaign: str) -> bool:
-    """Check if a tier or campaign belongs to the sal shikum family."""
-    return tier_or_campaign in SAL_SHIKUM_TIERS
-
-# Campaign → Firebase collection mapping
-CAMPAIGN_COLLECTIONS = {
-    "sal_shikum_tovplay":  "sal_shikum_tovplay",
-    "sal_shikum_tovtech":  "sal_shikum_tovtech",
-}
-CAMPAIGN_STATS = {
-    "sal_shikum_tovplay":  {"stats": "sal_shikum_tovplay_stats",  "daily": "sal_shikum_tovplay_stats_daily",  "events": "sal_shikum_tovplay_events"},
-    "sal_shikum_tovtech":  {"stats": "sal_shikum_tovtech_stats",  "daily": "sal_shikum_tovtech_stats_daily",  "events": "sal_shikum_tovtech_events"},
-}
-
-
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -113,6 +92,10 @@ def today_str() -> str:
 
 
 # ── Email templates ────────────────────────────────────────────────────────────
+# These are PLACEHOLDER templates. Customize the subject and body copy below
+# to match your organization, product, and target audience.
+# See templates/email_tier1.md, templates/email_tier2.md, templates/email_tier3.md
+# for full guidance on writing effective email copy.
 
 _TRAILING_PREPS = {
     # English
@@ -159,7 +142,7 @@ def _display_name(org: str) -> str:
             if wl in _LOWERCASE_WORDS and i > 0:
                 words.append(wl)
             elif len(w) <= 3 and w.isalpha():
-                words.append(w)  # keep "ASS", "DEP", "APS" as-is
+                words.append(w)  # keep short abbreviations as-is
             else:
                 words.append(w.title())
         org = " ".join(words)
@@ -172,7 +155,22 @@ def _display_name(org: str) -> str:
 
 
 def build_email(contact: dict, email_type: str, click_token: str) -> tuple[str, str]:
-    """Returns (subject, body)."""
+    """Returns (subject, body).
+
+    CUSTOMIZE THIS FUNCTION with your own email copy.
+    See templates/email_tier1.md, email_tier2.md, email_tier3.md for guidance.
+
+    Available contact fields:
+      - contact["org_name"]            — organization name
+      - contact["tier"]                — Tier1 / Tier2 / Tier3
+      - contact["project_name"]        — their project name (if available)
+      - contact["specific_achievement"] — AI-extracted achievement (Tier1)
+      - contact["their_population"]    — AI-extracted target group (Tier1)
+      - contact["relevant_theme"]      — AI-extracted theme (Tier2/3)
+
+    The click_token is used to build a tracked link to PORTFOLIO_URL.
+    Return (None, None) for email types that don't apply to a given tier.
+    """
     org       = _display_name(contact["org_name"])
     org_short = _truncate(org, 30)
     proj      = _truncate(contact.get("project_name") or "your project", 40)
@@ -182,255 +180,173 @@ def build_email(contact: dict, email_type: str, click_token: str) -> tuple[str, 
     tier      = contact.get("tier", "Tier3")
     link_html = PORTFOLIO_URL
 
+    # ── Tier 1 — highest relevance, full 4-email sequence ─────────────────────
+    # Customize: these contacts have the strongest match to your target audience.
+    # Use specific_achievement and their_population for personalization.
     if tier == "Tier1":
         if email_type == "initial":
             return (
-                f"Idea for {org_short} — skills course for your participants",
+                f"[Your subject line for {org_short}]",
                 f"""Hi,
 
-I noticed {org}'s work on {proj} — specifically {achieve}. That's not easy to pull off.
+[Your Tier 1 initial email body here. See templates/email_tier1.md for guidance.]
 
-I'm Raz, and we run a small org in Israel called TovTech. We developed a short course (6 sessions) that helps young people — including those with no tech background or with disabilities — create something real they can show an employer. Not coding lessons, but a structured process where they finish each session with a published product.
+I noticed {org}'s work on {proj} — specifically {achieve}. That's impressive.
 
-One participant, a 19-year-old with learning difficulties who had never used a computer, built 5 published projects in 6 sessions. Here's one: {link_html}
+[Introduce yourself and your organization. Explain the value you offer.]
 
-I think there might be an interesting overlap with what {org} does for {pop}. Would it be useful if I sent you our Session 1 materials (complete lesson plan)? No cost, no commitment — just curious if it resonates.
+[Include a link to your portfolio/product: {link_html}]
+
+[Explain why this is relevant to {pop}.]
+
+[Clear call to action — e.g. "Would it be useful if I sent you our Session 1 materials?"]
 
 {SIG_FULL}"""
             )
         elif email_type == "followup1":
             return (
-                f"Re: Your {proj} work + an idea from Israel",
+                f"Re: [Your subject] + {org_short}",
                 f"""Hi,
 
-Following up on my note — I realize I should share more context on the methodology.
+[Your Tier 1 follow-up 1 body here. See templates/email_tier1.md for guidance.]
 
-In our pilot, a 19-year-old with learning difficulties who had never used a computer went from zero to 5 published games in 6 sessions. What stayed with him wasn't the technology — it was the confidence that he could build something real and show it to the world.
+[Add more context about your methodology or approach.]
 
-We're looking for 2-3 experienced partners for a Joint Learning Exchange to test this with {pop}. Full materials provided, no cost — we just want honest feedback from practitioners like {org}.
+[Reinforce the value for {pop}.]
 
-Worth a quick call?
+[Gentle call to action — e.g. "Worth a quick call?"]
 
 {SIG_MID}"""
             )
         elif email_type == "followup2":
             return (
-                f"Re: Your {proj} work + an idea from Israel",
+                f"Re: [Your subject] + {org_short}",
                 f"""Hi,
 
-One thing I forgot to mention — we're preparing an Erasmus+ KA2 cooperation proposal for the next deadline, and we're looking for partners with experience in {theme}.
+[Your Tier 1 follow-up 2 body here. See templates/email_tier1.md for guidance.]
 
-{org}'s work on {proj} is exactly the kind of expertise we'd want on the consortium. Would you be open to exploring this together?
+[Add a new angle or hook, e.g. partnership opportunity, shared goal around {theme}.]
 
-Happy to send over a one-page concept note.
+[{org}'s work on {proj} is relevant here.]
+
+[Offer something concrete, e.g. a one-page concept note.]
 
 {SIG_SLIM}"""
             )
         else:  # followup3
             return (
-                f"Last note — TovTech + {org}",
+                f"Last note — [Your Org] + {org}",
                 f"""Hi,
 
-I'll keep this short — I know inboxes are brutal.
+[Your Tier 1 breakup email here. See templates/email_tier1.md for guidance.]
 
-If AI skills for {pop} or an Erasmus+ partnership is ever on your radar, my door is open. If not, I genuinely wish {org} all the best with {proj}.
+[Keep it short. Wish them well. Leave the door open.]
+
+[If {pop} or [your offer] is ever on your radar, I'm here.]
 
 {SIG_SLIM}"""
             )
 
+    # ── Tier 2 — medium relevance, 3-email sequence ────────────────────────────
+    # Customize: content-gift approach. Lead with value.
     elif tier == "Tier2":
         if email_type == "initial":
             return (
-                f"Free lesson plan for {org_short}",
+                f"[Your subject line for {org_short}]",
                 f"""Hi,
 
-I came across {org}'s {proj} project and thought of something we built that might be useful.
+[Your Tier 2 initial email body here. See templates/email_tier2.md for guidance.]
 
-We're TovTech, a small org in Israel. We created a 6-session course where young people — even those who've never used a computer — finish each session with a real, published product they can show the world. It's designed for educators working with people who need practical skills for employment.
+[Briefly introduce yourself and your organization.]
 
-Here's what one participant built: {link_html}
+[Lead with a gift or free resource relevant to {proj} and {theme}.]
 
-We're sharing Session 1 (complete lesson plan + activity guide) free with Erasmus+ organisations. If it fits what {org} does, I'd be happy to send it over — takes 2 minutes to review.
+[Link: {link_html}]
 
-Want me to send it?
+[Soft call to action — "Interested? Just reply and I'll send it over."]
 
 {SIG_FULL}"""
             )
         elif email_type == "followup1":
             return (
-                f"Re: Quick idea for {org} — AI skills through game-building",
+                f"Re: [Your subject] for {org}",
                 f"""Hi,
 
-Quick follow-up — would the free Session 1 materials be useful for your team?
+[Your Tier 2 follow-up 1 body here. See templates/email_tier2.md for guidance.]
 
-It includes a full lesson plan + participant activity guide. Several Erasmus+ organisations are already testing it with their cohorts.
+[Short reminder. Restate the offer.]
 
-Just say the word and I'll send it over.
+[Easy yes/no call to action.]
 
 {SIG_SLIM}"""
             )
         elif email_type == "followup2":
             return (
-                f"Re: Quick idea for {org} — AI skills through game-building",
+                f"Re: [Your subject] for {org}",
                 f"""Hi,
 
-Last follow-up from me. If the free AI lesson doesn't fit right now, no worries at all.
+[Your Tier 2 breakup email here. See templates/email_tier2.md for guidance.]
 
-If timing is better later in the year, feel free to reach out anytime.
+[Last follow-up. Keep it gracious. No pressure.]
 
 {SIG_SLIM}"""
             )
         else:  # followup3 — not used for Tier2
             return None, None
 
+    # ── Tier 3 — general audience, 2-email sequence ────────────────────────────
+    # Customize: simple, low-pressure content-gift approach.
     elif tier == "Tier3":
         if email_type == "initial":
             return (
-                f"Free lesson plan for {org_short}",
+                f"[Your subject line for {org_short}]",
                 f"""Hi,
 
-We're TovTech, a small education org in Israel. We built a short course that helps young people — including those with no tech background — create real, published products they can be proud of and show to employers.
+[Your Tier 3 initial email body here. See templates/email_tier3.md for guidance.]
 
-We're offering Session 1 (full lesson plan + activity guide) free to education organisations. Here's an example of what a participant built: {link_html}
+[Brief intro. Lead with your free offer or resource.]
 
-If it fits what {org} does, just reply and I'll send it over.
+[Link: {link_html}]
+
+[Simple call to action — "If it fits what {org} does, just reply."]
 
 {SIG_FULL}"""
             )
         elif email_type == "followup1":
             return (
-                "Re: Free AI lesson — thought of your work",
+                "Re: [Your subject] — thought of your work",
                 f"""Hi,
 
-Checking in on the free AI game-building lesson. Happy to send it if useful — no strings.
+[Your Tier 3 follow-up body here. See templates/email_tier3.md for guidance.]
+
+[One-line reminder. No pressure.]
 
 {SIG_SLIM}"""
             )
         else:  # followup2/3 — not used for Tier3
             return None, None
 
-    elif tier == "sal_shikum_tovplay":
-        name = contact.get("contact_name") or ""
-        if email_type == "initial":
-            return (
-                f"סדנת משחקי AI למשתקמים של {org_short}",
-                f"""שלום {name},
+    # ── Custom campaigns ────────────────────────────────────────────────────────
+    # Add additional elif branches here for custom campaigns.
+    # Example:
+    #
+    # elif tier == "my_campaign":
+    #     name = contact.get("contact_name") or ""
+    #     if email_type == "initial":
+    #         return (
+    #             f"[Custom subject for {org_short}]",
+    #             f"""Hi {name},
+    #
+    # [Custom email body for your campaign.]
+    #
+    # {SIG_FULL}"""
+    #         )
+    #     elif email_type == "followup1":
+    #         ...
+    #     else:
+    #         return None, None
 
-אני רז מ-TovTech — בית טכנולוגי לאנשים עם מוגבלויות (tovtech.org).
-
-אני פונה כי אני חושב שהסדנה שלנו יכולה להיות פעילות מעולה עבור מקבלי השירות של {org}.
-
-TovPlay היא סדנת פיתוח משחקים ב-AI — שישה מפגשים מרוחקים בזום, שבהם המשתתפים בונים משחקי מחשב אמיתיים, בלי לכתוב שורת קוד אחת. הם מכוונים את ה-AI, מקבלים החלטות עיצוב, ובסוף כל מפגש יש להם מוצר עובד שאפשר לשחק בו ולהראות לאחרים.
-
-למה מסגרות שיקום בוחרות בזה:
-✅ כבר במפגש הראשון — יש משחק עובד. חוויית הצלחה מיידית
-✅ אפס דרישות קדם — מתאים לכל רמה, בלי חסם טכנולוגי
-✅ בסוף הסדנה כל משתתף מקבל תיק עבודות אונליין — קישור חי לשים בקו״ח
-✅ מיומנויות עבודה עם AI — מה שמעסיקים מחפשים היום
-
-המחיר למקבלי שירות: 599 ₪ לסדנה המלאה (שישה מפגשים של שעה וחצי) — מחיר מיוחד לאנשים עם מוגבלויות.
-
-הכנתי הרצאה של השיעור הראשון כדי שתוכלו לראות בדיוק מה המשתקמים מקבלים:
-👈 https://youtu.be/N_FPSriLw7Y
-
-מקבלי השירות שלכם מוזמנים להירשם ישירות באתר — tovplay.org
-
-{SIG_HE_FULL}"""
-            )
-        elif email_type == "followup1":
-            return (
-                f"Re: סדנת משחקי AI למשתקמים של {org_short}",
-                f"""שלום {name},
-
-רציתי לוודא שהמייל הקודם הגיע.
-
-בקצרה — פיתחנו סדנה שבה משתתפים בונים משחקי מחשב אמיתיים עם AI, בלי רקע טכני. מסגרות שיקום משתמשות בזה כפעילות שמשלבת חוויית הצלחה עם מיומנויות תעסוקתיות.
-
-אפשר לצפות בהרצאה של השיעור הראשון כאן:
-👈 https://youtu.be/N_FPSriLw7Y
-
-{SIG_HE_SLIM}"""
-            )
-        elif email_type == "followup2":
-            return (
-                f"Re: סדנת משחקי AI למשתקמים של {org_short}",
-                f"""שלום {name},
-
-הודעה אחרונה ממני — לא רוצה להציף.
-
-אם סדנת AI למשתקמים של {org} רלוונטית בעתיד, אשמח לשמוע. אם לא, מאחל בהצלחה.
-
-הקישור להרצאה נשאר פתוח: https://youtu.be/N_FPSriLw7Y
-הרשמה לסדנה: tovplay.org
-
-{SIG_HE_LAST}"""
-            )
-        else:
-            return None, None
-
-    elif tier == "sal_shikum_tovtech":
-        name = contact.get("contact_name") or ""
-        if email_type == "initial":
-            return (
-                f"משתקמים של {org_short} יכולים לעבוד בהייטק",
-                f"""שלום {name},
-
-אני רז מ-TovTech — בית טכנולוגי לאנשים עם מוגבלויות (tovtech.org).
-
-אני פונה כי ראיתי דבר שחוזר על עצמו: משתקמים עם יכולת ורצון, שפשוט לא מוצאים את הדרך לתעסוקה משמעותית. אנחנו בנינו את הדרך הזו.
-
-בוגרי התוכניות שלנו עובדים היום בחברות הייטק — אנשים שהגיעו אלינו בלי רקע טכנולוגי, ויצאו עם ניסיון מעשי, תיק עבודות, וקו״ח שמעסיקים לוקחים ברצינות.
-
-איך זה עובד:
-
-📊 קורס Data & AI — מאפס לקריירה בהייטק
-✅ לימוד Python, ניתוח נתונים ו-AI — בלי רקע טכנולוגי קודם
-✅ שלושה עד ארבעה חודשים לימוד עצמי מודרך, אחר כך חממה תעסוקתית עם פרויקטים אמיתיים
-✅ ליווי אישי עד למציאת עבודה — קו״ח, הכנה לראיונות, חיבור ישיר למעסיקים
-✅ דמי רצינות של 500 ₪ בלבד, השאר ממומן דרך שירותי השיקום
-
-🚀 החממה התעסוקתית — למי שכבר למד ומחפש ניסיון
-✅ עבודה בצוותי פיתוח על פרויקטים אמיתיים, עם כלים מהתעשייה
-✅ ימים ב׳-ה׳, 09:00-13:00, שישה עד תשעה חודשים
-✅ הבוגרים יוצאים עם תיק עבודות, המלצות מקצועיות, וביטחון
-
-שתי התוכניות פתוחות לבעלי נכות מוכרת של 40% ומעלה, כולל מי שמגיעים דרך סל שיקום.
-
-אשמח לספר עוד, ובינתיים כל הפרטים כאן:
-👈 tovtech.org/he/programs
-
-{SIG_HE_FULL}"""
-            )
-        elif email_type == "followup1":
-            return (
-                f"Re: משתקמים של {org_short} יכולים לעבוד בהייטק",
-                f"""שלום {name},
-
-רציתי לוודא שהמייל הקודם הגיע.
-
-בקצרה — אנחנו לוקחים משתקמים בלי רקע טכנולוגי ומכשירים אותם לעבודה אמיתית בהייטק. קורס Data & AI וחממה תעסוקתית, ממומנים דרך שירותי השיקום.
-
-בוגרים שלנו כבר עובדים בחברות. אני חושב שזה יכול להתאים גם למשתקמים של {org}.
-
-👈 tovtech.org/he/programs
-
-{SIG_HE_SLIM}"""
-            )
-        elif email_type == "followup2":
-            return (
-                f"Re: משתקמים של {org_short} יכולים לעבוד בהייטק",
-                f"""שלום {name},
-
-הודעה אחרונה ממני — לא רוצה להציף.
-
-אם יש אצלכם משתקמים שמחפשים דרך לתעסוקה בהייטק, נשמח לעזור. אם לא עכשיו, הדלת תמיד פתוחה.
-
-👈 tovtech.org/he/programs
-
-{SIG_HE_LAST}"""
-            )
-        else:
-            return None, None
+    return None, None
 
 
 # ── Firebase helpers ───────────────────────────────────────────────────────────
@@ -535,69 +451,6 @@ def import_prospects(db):
         print(f"  Skipped {skipped_email_dupes:,} orgs with duplicate email addresses")
 
 
-SAL_SHIKUM_CSV = os.path.join(PIPELINE_DIR, "..", "sal shikum", "sal_shikum_contacts_v2.csv")
-
-
-def import_sal_shikum(db, campaign: str):
-    """Import sal shikum contacts into the specified campaign collection."""
-    if not os.path.exists(SAL_SHIKUM_CSV):
-        print(f"ERROR: {SAL_SHIKUM_CSV} not found.")
-        sys.exit(1)
-
-    df = pd.read_csv(SAL_SHIKUM_CSV, encoding="utf-8-sig").fillna("")
-    df = df[df["email"].astype(str).str.strip() != ""]
-
-    EMAIL_RE = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
-    df = df[df["email"].apply(lambda e: bool(EMAIL_RE.match(str(e).strip().lower())))]
-
-    col_name = CAMPAIGN_COLLECTIONS[campaign]
-
-    # Collect existing emails to avoid dupes
-    seen_emails: set = set()
-    for doc in db.collection(col_name).stream():
-        e = (doc.to_dict() or {}).get("email", "").lower().strip()
-        if e:
-            seen_emails.add(e)
-
-    imported = 0
-    for _, row in df.iterrows():
-        email_addr = str(row["email"]).strip().lower()
-        if email_addr in seen_emails:
-            continue
-        seen_emails.add(email_addr)
-
-        doc_id = safe_id(f"{campaign}_{row['org_name']}")
-        ref = db.collection(col_name).document(doc_id)
-
-        data = {
-            "org_name":          str(row["org_name"]),
-            "email":             email_addr,
-            "contact_name":      str(row["contact_name"]),
-            "tier":              campaign,
-            "campaign":          campaign,
-            "country":           "Israel",
-            "status":            "pending",
-            "replied":           False,
-            "click_count":       0,
-            "initial_sent_at":   None,
-            "initial_thread_id": None,
-            "followup1_sent_at":   None,
-            "followup1_thread_id": None,
-            "followup2_sent_at":   None,
-            "followup2_thread_id": None,
-            "replied_at":        None,
-            "created_at":        now_iso(),
-        }
-
-        try:
-            ref.create(data)
-            imported += 1
-        except AlreadyExists:
-            pass
-
-    print(f"  Imported {imported:,} contacts into {col_name}")
-
-
 def make_click_token(db, org_name: str, target_url: str) -> str:
     token = uuid.uuid4().hex
     db.collection("tracking_tokens").document(token).set({
@@ -610,11 +463,8 @@ def make_click_token(db, org_name: str, target_url: str) -> str:
     return token
 
 
-def log_event(db, org_name: str, event_type: str, data: dict = None, campaign: str = "erasmus"):
-    if campaign in CAMPAIGN_STATS:
-        events_col = CAMPAIGN_STATS[campaign]["events"]
-    else:
-        events_col = "events"
+def log_event(db, org_name: str, event_type: str, data: dict = None, campaign: str = "main"):
+    events_col = f"{campaign}_events" if campaign != "main" else "events"
     db.collection(events_col).add({
         "org_name":   org_name,
         "event_type": event_type,
@@ -623,14 +473,13 @@ def log_event(db, org_name: str, event_type: str, data: dict = None, campaign: s
     })
 
 
-def update_stats(db, event_type: str, tier: str):
-    """Increment counters in stats/global and stats_daily/{today}.
-    Routes to campaign-specific collections for sal shikum campaigns."""
+def update_stats(db, event_type: str, tier: str, campaign: str = "main"):
+    """Increment counters in stats/global and stats_daily/{today}."""
     today = today_str()
 
-    if tier in CAMPAIGN_STATS:
-        stats_col = CAMPAIGN_STATS[tier]["stats"]
-        daily_col = CAMPAIGN_STATS[tier]["daily"]
+    if campaign and campaign != "main":
+        stats_col = f"{campaign}_stats"
+        daily_col = f"{campaign}_stats_daily"
     else:
         stats_col = "stats"
         daily_col = "stats_daily"
@@ -726,20 +575,20 @@ def get_thread_metadata(service, thread_id: str) -> list:
 
 # ── Core logic ─────────────────────────────────────────────────────────────────
 
+def _collection_for_campaign(campaign: str) -> str:
+    """Return the Firestore collection name for a given campaign."""
+    if campaign and campaign != "main":
+        return campaign  # custom campaigns use a collection named after the campaign
+    return "contacts"
+
+
 def check_replies(db, service, dry_run: bool = False, campaign: str = None):
-    # Check replies in the right collection(s)
-    collections = []
-    if campaign in CAMPAIGN_COLLECTIONS:
-        collections = [CAMPAIGN_COLLECTIONS[campaign]]
-    elif campaign:
-        collections = ["contacts"]
-    else:
-        # Check all collections: erasmus + all sal shikum campaigns
-        collections = ["contacts"] + list(CAMPAIGN_COLLECTIONS.values())
+    col = _collection_for_campaign(campaign) if campaign else "contacts"
+    collections = [col] if campaign else ["contacts"]
 
     active = []
-    for col in collections:
-        active += db.collection(col) \
+    for c in collections:
+        active += db.collection(c) \
                     .where("replied", "==", False) \
                     .where("status", "in", ["initial_sent", "followup1_sent",
                                             "followup2_sent", "followup3_sent"]) \
@@ -768,6 +617,7 @@ def check_replies(db, service, dry_run: bool = False, campaign: str = None):
         if not inbound:
             continue
 
+        _camp = campaign or "main"
         if is_bounce(inbound):
             print(f"  ✗ Bounce: {contact['org_name']}")
             bounced += 1
@@ -777,11 +627,8 @@ def check_replies(db, service, dry_run: bool = False, campaign: str = None):
                     "replied":    True,   # stops all followups
                     "bounced_at": now_iso(),
                 })
-                _camp = contact.get("campaign") or contact.get("tier", "erasmus")
-                if _camp not in SAL_SHIKUM_CAMPAIGNS:
-                    _camp = "erasmus"
                 log_event(db, contact["org_name"], "bounced", {"email": contact["email"]}, campaign=_camp)
-                update_stats(db, "bounced", contact.get("tier"))
+                update_stats(db, "bounced", contact.get("tier"), campaign=_camp)
         else:
             print(f"  ↩ Reply: {contact['org_name']}")
             replied += 1
@@ -791,22 +638,19 @@ def check_replies(db, service, dry_run: bool = False, campaign: str = None):
                     "replied":    True,
                     "replied_at": now_iso(),
                 })
-                _camp = contact.get("campaign") or contact.get("tier", "erasmus")
-                if _camp not in SAL_SHIKUM_CAMPAIGNS:
-                    _camp = "erasmus"
                 log_event(db, contact["org_name"], "replied", {"email": contact["email"]}, campaign=_camp)
-                update_stats(db, "replied", contact.get("tier"))
+                update_stats(db, "replied", contact.get("tier"), campaign=_camp)
 
     print(f"  Checked {len(active):,} active → {replied} replies, {bounced} bounces")
     return replied, bounced
 
 
 def send_followups(db, service, followup_type: str, days: int,
-                   tier_filter, dry_run: bool, max_send: int = 999) -> int:
+                   tier_filter, dry_run: bool, max_send: int = 999,
+                   campaign: str = "main") -> int:
     cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
 
-    # Route to correct collection
-    col = CAMPAIGN_COLLECTIONS.get(tier_filter, "contacts")
+    col = _collection_for_campaign(campaign)
 
     if followup_type == "followup1":
         query = db.collection(col) \
@@ -839,9 +683,6 @@ def send_followups(db, service, followup_type: str, days: int,
     docs = query.get()
     if tier_filter:
         docs = [d for d in docs if d.to_dict().get("tier") == tier_filter]
-    else:
-        # Exclude sal_shikum tiers from default Erasmus+ runs
-        docs = [d for d in docs if not _is_sal_shikum(d.to_dict().get("tier", ""))]
 
     sent = 0
     for doc in docs:
@@ -860,10 +701,9 @@ def send_followups(db, service, followup_type: str, days: int,
         print(f"  → [{followup_type}] {contact['org_name'][:45]}")
 
         if not dry_run:
-            is_rtl = _is_sal_shikum(contact.get("tier", ""))
             msg_id, t_id = send_email(
                 service, SENDER_EMAIL, contact["email"],
-                subject, body, thread_id=thread_id, rtl=is_rtl
+                subject, body, thread_id=thread_id
             )
             if msg_id:
                 update = {
@@ -873,12 +713,9 @@ def send_followups(db, service, followup_type: str, days: int,
                 if save_thread:
                     update[save_thread] = t_id
                 doc.reference.update(update)
-                _camp = contact.get("campaign") or contact.get("tier", "erasmus")
-                if _camp not in SAL_SHIKUM_CAMPAIGNS:
-                    _camp = "erasmus"
                 log_event(db, contact["org_name"], followup_type,
-                          {"to": contact["email"], "subject": subject}, campaign=_camp)
-                update_stats(db, followup_type, contact.get("tier"))
+                          {"to": contact["email"], "subject": subject}, campaign=campaign)
+                update_stats(db, followup_type, contact.get("tier"), campaign=campaign)
                 sent += 1
                 time.sleep(2)
         else:
@@ -887,20 +724,20 @@ def send_followups(db, service, followup_type: str, days: int,
     return sent
 
 
-def send_initial_emails(db, service, quota: int, tier_filter, dry_run: bool) -> int:
+def send_initial_emails(db, service, quota: int, tier_filter, dry_run: bool,
+                        campaign: str = "main") -> int:
     if quota <= 0:
         return 0
 
-    # sal_shikum never runs unless explicitly requested via --tier sal_shikum
     tiers = [tier_filter] if tier_filter else ["Tier1", "Tier2", "Tier3"]
     per_tier = DAILY_PER_TIER if not tier_filter else quota
 
     sent = 0
+    col = _collection_for_campaign(campaign)
 
     for tier in tiers:
         tier_quota = per_tier
 
-        col = CAMPAIGN_COLLECTIONS.get(tier, "contacts")
         docs = db.collection(col) \
                  .where("status", "==", "pending") \
                  .where("tier", "==", tier) \
@@ -913,11 +750,8 @@ def send_initial_emails(db, service, quota: int, tier_filter, dry_run: bool) -> 
                 break
             contact = doc.to_dict()
 
-            # Only send to contacts with personalization data
-            # sal_shikum campaigns use contact_name/org_name only — no extra fields needed
-            if _is_sal_shikum(tier):
-                pass  # no personalization required
-            elif tier == "Tier1" and not (contact.get("specific_achievement") and contact.get("their_population")):
+            # Only send to contacts with personalization data (skip if not yet personalized)
+            if tier == "Tier1" and not (contact.get("specific_achievement") and contact.get("their_population")):
                 continue
             if tier in ("Tier2", "Tier3") and not contact.get("relevant_theme"):
                 continue
@@ -925,13 +759,14 @@ def send_initial_emails(db, service, quota: int, tier_filter, dry_run: bool) -> 
             token   = make_click_token(db, contact["org_name"], PORTFOLIO_URL)
             subject, body = build_email(contact, "initial", token)
 
+            if subject is None:
+                continue  # no template for this tier
+
             print(f"  -> [initial/{tier}] {contact['org_name'][:45]}")
 
             if not dry_run:
-                is_rtl = _is_sal_shikum(tier)
                 msg_id, thread_id = send_email(
-                    service, SENDER_EMAIL, contact["email"], subject, body,
-                    rtl=is_rtl
+                    service, SENDER_EMAIL, contact["email"], subject, body
                 )
                 if msg_id:
                     doc.reference.update({
@@ -939,10 +774,9 @@ def send_initial_emails(db, service, quota: int, tier_filter, dry_run: bool) -> 
                         "initial_sent_at":  now_iso(),
                         "initial_thread_id": thread_id,
                     })
-                    _camp = tier if _is_sal_shikum(tier) else "erasmus"
                     log_event(db, contact["org_name"], "initial_sent",
-                              {"to": contact["email"], "subject": subject}, campaign=_camp)
-                    update_stats(db, "initial_sent", contact.get("tier"))
+                              {"to": contact["email"], "subject": subject}, campaign=campaign)
+                    update_stats(db, "initial_sent", contact.get("tier"), campaign=campaign)
                     tier_sent += 1
                     time.sleep(2)
             else:
@@ -961,18 +795,15 @@ def main():
     args        = sys.argv[1:]
     dry_run     = "--dry-run"       in args
     check_only  = "--check-replies" in args
-    campaign_arg = None
+    campaign_arg = "main"
     if "--campaign" in args:
         campaign_arg = args[args.index("--campaign") + 1]
-    is_sal_shikum = campaign_arg in SAL_SHIKUM_CAMPAIGNS
     tier_filter = None
     limit       = DAILY_LIMIT
 
-    if is_sal_shikum:
-        tier_filter = campaign_arg
-    elif "--tier" in args:
+    if "--tier" in args:
         raw_tier = args[args.index("--tier") + 1]
-        tier_filter = raw_tier if raw_tier in SAL_SHIKUM_TIERS else f"Tier{raw_tier}"
+        tier_filter = f"Tier{raw_tier}" if not raw_tier.startswith("Tier") else raw_tier
     if "--limit" in args:
         limit = int(args[args.index("--limit") + 1])
 
@@ -985,8 +816,8 @@ def main():
     # ── Idempotency check: skip if already sent today ──────────────────────────
     if not dry_run and not check_only:
         today = today_str()
-        if is_sal_shikum:
-            daily_col = CAMPAIGN_STATS[campaign_arg]["daily"]
+        if campaign_arg != "main":
+            daily_col = f"{campaign_arg}_stats_daily"
         else:
             daily_col = "stats_daily"
         daily_doc = db.collection(daily_col).document(today).get().to_dict() or {}
@@ -996,18 +827,13 @@ def main():
             _gh_output("had_activity", "false")
             return
 
-    # Import: use dedicated importer for sal_shikum campaigns
-    if is_sal_shikum:
-        print(f"─── Importing {campaign_arg} contacts ───")
-        import_sal_shikum(db, campaign_arg)
-        print()
-    else:
-        print("─── Importing Erasmus+ prospects ───")
-        import_prospects(db)
-        print()
+    # Import prospects from CSV
+    print(f"─── Importing prospects (campaign: {campaign_arg}) ───")
+    import_prospects(db)
+    print()
 
     # ── Early exit: skip Gmail entirely if there is nothing to do ──────────────
-    active_col = CAMPAIGN_COLLECTIONS.get(campaign_arg, "contacts") if is_sal_shikum else "contacts"
+    active_col = _collection_for_campaign(campaign_arg)
     if not dry_run and not check_only:
         ACTIVE_STATUSES = ["initial_sent", "followup1_sent", "followup2_sent", "followup3_sent"]
         has_pending = bool(
@@ -1034,7 +860,7 @@ def main():
 
     # 1. Check replies + bounces
     print("─── Checking replies ───")
-    _campaign = campaign_arg if is_sal_shikum else None
+    _campaign = campaign_arg if campaign_arg != "main" else None
     replied_count, bounced_count = check_replies(db, service, dry_run, campaign=_campaign)
     print()
 
@@ -1046,19 +872,20 @@ def main():
 
     sent_today = 0
 
-    # 1. Initial emails FIRST (12/day = 4 per tier)
+    # 2. Initial emails FIRST (up to DAILY_INITIAL per day)
     initial_quota = min(DAILY_INITIAL, DAILY_LIMIT)
     print(f"─── Initial emails (quota: {initial_quota}) ───")
-    n = send_initial_emails(db, service, initial_quota, tier_filter, dry_run)
+    n = send_initial_emails(db, service, initial_quota, tier_filter, dry_run, campaign=campaign_arg)
     sent_today += n
     print(f"  Sent: {n}\n")
 
-    # 2. Followup 1 only (max 8/day, never exceed DAILY_LIMIT total)
+    # 3. Followup 1 (max DAILY_FOLLOWUP/day, never exceed DAILY_LIMIT total)
     followup_quota = min(DAILY_FOLLOWUP, DAILY_LIMIT - sent_today)
     print(f"─── Followup 1 (Day {FOLLOWUP1_DAYS}, quota: {followup_quota}) ───")
     if followup_quota > 0:
         n = send_followups(db, service, "followup1", FOLLOWUP1_DAYS,
-                           tier_filter, dry_run, max_send=followup_quota)
+                           tier_filter, dry_run, max_send=followup_quota,
+                           campaign=campaign_arg)
         sent_today += n
     else:
         print("  Skipped — daily limit reached")
@@ -1066,7 +893,8 @@ def main():
     print(f"  Sent: {n}\n")
 
     # Summary from Firebase
-    global_stats = db.collection("stats").document("global").get().to_dict() or {}
+    stats_col = f"{campaign_arg}_stats" if campaign_arg != "main" else "stats"
+    global_stats = db.collection(stats_col).document("global").get().to_dict() or {}
     print("=" * 50)
     print(f"Sent today: {sent_today}")
     print(f"Totals → Sent: {global_stats.get('sent', 0):,} | "

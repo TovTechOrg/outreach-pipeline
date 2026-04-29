@@ -119,7 +119,7 @@ contacts/                       ← main prospect database
     last_contacted (timestamp)
     initial_sent_at, followup1_sent_at, ...
     specific_achievement, their_population, relevant_theme  ← AI fields
-    campaign (string, default "erasmus")
+    campaign (string, default "main")
 
 events/                         ← event log
   {event_id}

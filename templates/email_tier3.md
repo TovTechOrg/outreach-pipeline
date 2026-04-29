@@ -1,30 +1,58 @@
-# Email Template — Tier 3 (Youth NGOs, general adult ed, community orgs)
+# Email Template — Tier 3 (General Audience)
 **Strategy: Content Gift — simple, low-pressure**
+
+Tier 3 contacts are a broad match — they work in your general space but without strong relevance signals. Keep it very short. Lead with value. Two emails maximum.
+
+---
+
+## Placeholders used
+
+| Placeholder | Source | Example |
+|-------------|--------|---------|
+| `[ORG_NAME]` | `org_name` field | "Learning Together e.V." |
+| `[YOUR_NAME]` | Your name from config | "Alex" |
+| `[YOUR_ORG]` | Your org from config | "Acme Org" |
+| `[YOUR_WEBSITE]` | Your website from config | "acme.org" |
+| `[YOUR_EMAIL]` | Your email from config | "alex@acme.org" |
+| `[FREE_RESOURCE]` | Your free offer | "Session 1 lesson plan" |
+| `[PORTFOLIO_LINK]` | Tracked link to your portfolio | auto-inserted |
 
 ---
 
 ## Initial Email
 
-**Subject:** Free AI lesson — thought of your work
+**Subject:** Free [resource type] — thought of your work
 
-Dear team at [ORG_NAME],
+Hi,
 
-We built a short course at TovTech (Israel) where young people — including those who've never touched a computer — build real video games from scratch, no coding needed. Every session they leave with a published product they can show the world.
+We built [describe your product/course in one sentence] at [YOUR_ORG] ([YOUR_WEBSITE]).
 
-We're offering Session 1 (complete lesson plan) free to organisations in education. If it fits what [ORG_NAME] does, I'd love to send it over.
+[One sentence on who it's for and what they can do with it.]
 
-Raz
-CEO, TovTech | tovtech.org
-Erasmus+ OID: E10412123
+We're offering [FREE_RESOURCE] free to education organisations. Here's an example of what a participant produced: [PORTFOLIO_LINK]
+
+If it fits what [ORG_NAME] does, just reply and I'll send it over.
+
+[YOUR_NAME]
+[YOUR_ORG] | [YOUR_WEBSITE]
 
 ---
 
 ## Follow-up (Day 3)
 
-**Subject:** Re: Free AI lesson — thought of your work
+**Subject:** Re: Free [resource type] — thought of your work
 
 Hi,
 
-Checking in on the free AI game-building lesson. Happy to send it if useful — no strings.
+Checking in on the free [FREE_RESOURCE]. Happy to send it if useful — no strings.
 
-Raz | TovTech | raz@tovtech.org
+[YOUR_NAME] | [YOUR_ORG] | [YOUR_EMAIL]
+
+---
+
+## Notes for Tier 3
+
+- Do NOT use deep personalization (no `specific_achievement` or `their_population`) — it's not worth the AI cost at this tier
+- Keep the initial email under 100 words
+- Two emails only — no follow-up 2 or 3 for Tier 3
+- If they reply positively, handle them like a Tier 2 response

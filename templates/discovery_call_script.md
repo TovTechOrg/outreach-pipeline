@@ -15,15 +15,15 @@ I promise to keep this to [15/20] minutes. I have a few questions, and then if i
 
 **About their participants:**
 1. "Who exactly are the participants in [PROJECT_NAME]? What's their typical background coming in?"
-2. "What's the biggest barrier you see when it comes to digital skills for this group?"
-3. "Have you tried any coding or tech-building courses with them before? What happened?"
+2. "What's the biggest barrier you see when it comes to [your topic area] for this group?"
+3. "Have you tried any [relevant type of program] with them before? What happened?"
 
 **About what they're looking for:**
 4. "What does a successful outcome look like for you — is it employment? Confidence? A certificate?"
-5. "Are you currently running any AI or future-skills programmes? What's landing well, what isn't?"
+5. "Are you currently running any [your topic area] programmes? What's landing well, what isn't?"
 
-**About Erasmus+ / future plans:**
-6. "Are you planning any new Erasmus+ applications in the next round? Is digital skills on the agenda?"
+**About future plans:**
+6. "Are you planning any new partnerships or programs in the next round? Is [your topic area] on the agenda?"
 
 ---
 
@@ -36,26 +36,26 @@ I promise to keep this to [15/20] minutes. I have a few questions, and then if i
 ## Demo Pitch (3–4 min)
 
 **Show (if possible, screen share):**
-- A participant's published game portfolio: **https://gaming-course-1.pages.dev/my-website**
-- OR describe the Session 1 experience: "In 90 minutes, with zero prior knowledge, participants prompt an AI to build a Snake game. They leave with a working game published online."
+- A participant's published work or portfolio: **[YOUR PORTFOLIO LINK]**
+- OR describe the experience: "[In X minutes, with zero prior knowledge, participants can Y. They leave with Z.]"
 
 **Key messages to land:**
-- "We don't teach coding — we teach AI direction. The barrier disappears."
-- "Every session ends with a real product they can show an employer."
-- "The skill they're building — giving precise structured instructions to an AI — is exactly what the modern job market is asking for."
+- "[What makes your approach different from standard offerings]"
+- "[Concrete outcome participants walk away with]"
+- "[Why this is relevant to the modern job market / their goals]"
 
 ---
 
 ## Offer (2 min)
 
 **Option A — if they seem engaged:**
-> "What I'd love to offer is this: we'll give you Session 1 completely free — the full lesson plan, instructor notes, and activity. You run it with one group. If it works, we talk about next steps. No commitment."
+> "What I'd love to offer is this: we'll give you [FREE RESOURCE] completely free — [what's included]. You try it with one group. If it works, we talk about next steps. No commitment."
 
-**Option B — if they mention Erasmus+:**
-> "If there's appetite for a longer collaboration, TovTech is registered on Erasmus+ (OID: E10412123) and we'd be very open to being a partner in a future KA2 application. This kind of methodology — AI skills for employability — fits very naturally into the current European priorities."
+**Option B — if they mention partnership/collaboration:**
+> "If there's appetite for a longer collaboration, [YOUR ORG] is open to [partnership model]. [YOUR TOPIC] fits naturally into [relevant priorities/programs]."
 
-**Option C — Train the Trainer:**
-> "We also offer a capacity-building track where we train your team to deliver this in your own language, with your own cohorts. That gives you full independence. We call it Licensing & Capacity Building."
+**Option C — Train the Trainer / Licensing:**
+> "We also offer a capacity-building track where we train your team to deliver this in your own language, with your own cohorts. That gives you full independence."
 
 ---
 
@@ -64,7 +64,7 @@ I promise to keep this to [15/20] minutes. I have a few questions, and then if i
 "Does any of this fit what [ORG_NAME] is working on right now?"
 
 → If yes: agree on next step (send materials / schedule follow-up / set up pilot)
-→ If not now: "Totally understood. Can I keep in touch — maybe things look different after the next Erasmus+ call?"
+→ If not now: "Totally understood. Can I keep in touch — maybe things look different later?"
 
 ---
 
@@ -79,9 +79,9 @@ Really enjoyed speaking with you today. A few things I'll follow up on:
 1. [THING THEY MENTIONED THEY WANTED, e.g. "Session 1 lesson plan — attached"]
 2. [SECOND ACTION ITEM if any]
 
-Based on what you shared about [THEIR SPECIFIC CHALLENGE], I think [SPECIFIC ASPECT OF TOVPLAY] could be a real fit. Happy to explore that further.
+Based on what you shared about [THEIR SPECIFIC CHALLENGE], I think [SPECIFIC ASPECT OF YOUR OFFER] could be a real fit. Happy to explore that further.
 
 Let me know if you have any questions.
 
-Raz
-CEO, TovTech | raz@tovtech.org | tovtech.org | tovplay.org/en | Erasmus+ OID: E10412123
+[YOUR NAME]
+[YOUR ORG] | [YOUR EMAIL] | [YOUR WEBSITE]

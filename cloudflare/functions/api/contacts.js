@@ -1,27 +1,30 @@
 /**
- * GET /api/contacts?campaign=erasmus|sal_shikum_tovplay|sal_shikum_tovtech&tier=Tier1&status=replied&limit=200
+ * GET /api/contacts?campaign=main|my_campaign&tier=Tier1&status=replied&limit=200
  * Returns contact list from Firebase with optional filters.
  *
  * Campaign routing:
- *   erasmus (default)    → contacts collection
- *   sal_shikum_tovplay   → sal_shikum_tovplay collection
- *   sal_shikum_tovtech   → sal_shikum_tovtech collection
+ *   main (default)   → contacts collection
+ *   my_campaign      → my_campaign collection (named after the campaign)
+ *
+ * To add a new campaign collection: add an entry to CAMPAIGN_COLLECTION below.
  */
 
 import { initDB } from '../_lib/firebase.js'
 
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' }
 
+// Maps campaign name → Firestore collection name.
+// Add entries here when you create new campaigns.
 const CAMPAIGN_COLLECTION = {
-  erasmus:             'contacts',
-  sal_shikum_tovplay:  'sal_shikum_tovplay',
-  sal_shikum_tovtech:  'sal_shikum_tovtech',
+  main: 'contacts',
+  // Example: add your custom campaign below:
+  // my_campaign: 'my_campaign',
 }
 
 export async function onRequestGet({ request, env }) {
   try {
     const url      = new URL(request.url)
-    const campaign = url.searchParams.get('campaign') || 'erasmus'
+    const campaign = url.searchParams.get('campaign') || 'main'
     const tier     = url.searchParams.get('tier')
     const status   = url.searchParams.get('status')
     const limit    = parseInt(url.searchParams.get('limit') || '200')
@@ -39,7 +42,7 @@ export async function onRequestGet({ request, env }) {
     const contacts = await db.query(collection, filters, { limit })
 
     // Sort: Tier1 → Tier2 → Tier3, replied first
-    const tierOrder = { Tier1: 1, Tier2: 2, Tier3: 3, sal_shikum: 4 }
+    const tierOrder = { Tier1: 1, Tier2: 2, Tier3: 3 }
     contacts.sort((a, b) => {
       const td = (tierOrder[a.tier] || 9) - (tierOrder[b.tier] || 9)
       if (td !== 0) return td

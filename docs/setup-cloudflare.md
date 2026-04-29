@@ -112,8 +112,8 @@ TRACKING_BASE_URL=https://your-project-name.pages.dev
 
 | Endpoint | Function |
 |----------|---------|
-| `GET /api/stats?campaign=erasmus` | Campaign statistics |
-| `GET /api/contacts?campaign=erasmus` | Paginated contact list |
+| `GET /api/stats?campaign=main` | Campaign statistics |
+| `GET /api/contacts?campaign=main` | Paginated contact list |
 | `GET /track/c/:token` | Click tracking redirect |
 | `GET /approve/:token` | Approve AI reply draft |
 | `GET /skip/:token` | Skip AI reply draft |

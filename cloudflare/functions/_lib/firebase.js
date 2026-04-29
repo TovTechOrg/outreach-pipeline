@@ -3,7 +3,7 @@
  *
  * Environment variables required (set in Cloudflare Pages dashboard):
  *   FIREBASE_SA      — service account JSON (full contents, as a string secret)
- *   FIREBASE_PROJECT — Firebase project ID (e.g. "tovtech-outreach")
+ *   FIREBASE_PROJECT — Firebase project ID (e.g. "my-outreach-project")
  */
 
 const FIRESTORE = (pid) =>

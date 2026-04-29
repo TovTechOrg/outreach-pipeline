@@ -3,9 +3,9 @@ Master runner — executes all pipeline steps in sequence.
 Run: py run_pipeline.py [--step 1|2|3]
 
 Steps:
-  1 — Filter + deduplicate + score orgs from Erasmus+ CSV  (~5 sec)
-  2 — Parallel email scraping from websites in CSV         (~20-40 min)
-  3 — Generate final enriched_prospects.csv               (~5 sec)
+  1 — Filter + deduplicate + score orgs from your prospect CSV  (~5 sec)
+  2 — Parallel email scraping from websites in CSV              (~20-40 min)
+  3 — Generate final enriched_prospects.csv                     (~5 sec)
 
 Examples:
   py run_pipeline.py                        # run all steps
@@ -67,7 +67,7 @@ def main():
         extra = args[idx + 2:]
         run_step(step, extra)
     else:
-        print("TovPlay Outreach Pipeline")
+        print("Outreach Pipeline")
         print("=" * 60)
         print("Step 1: filter + score orgs      (~5 seconds)")
         print("Step 2: parallel email scraping  (~20-40 minutes, resume-safe)")

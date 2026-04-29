@@ -133,7 +133,7 @@ The daily sender. Each run:
 4. Logs every event to Firestore
 
 ```bash
-# Default campaign (erasmus)
+# Default campaign (main)
 python step6_send_emails.py
 
 # Specific campaign
@@ -194,7 +194,7 @@ The minimum required columns:
 
 Additional columns are passed through unchanged and can be used in step1 scoring logic.
 
-For Erasmus+ specifically, the raw export includes many extra fields (`project_title`, `programme`, etc.) that step1 uses for scoring.
+Additional columns in your source CSV are passed through unchanged and can be used in step1 scoring logic.
 
 ---
 

@@ -71,7 +71,7 @@ function unauthorizedResponse() {
   return new Response('Unauthorized', {
     status: 401,
     headers: {
-      'WWW-Authenticate': 'Basic realm="TovTech Outreach Dashboard"',
+      'WWW-Authenticate': 'Basic realm="Outreach Dashboard"',
       'Content-Type': 'text/plain',
     },
   })

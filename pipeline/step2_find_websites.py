@@ -27,8 +27,8 @@ HEADERS = {
 
 # Domains to skip in search results
 SKIP_DOMAINS = {
-    "erasmus-plus.ec.europa.eu",
-    "epale.ec.europa.eu",
+    # Add source-database domains here so they're skipped in search results
+    # e.g. "yourdatabase.ec.europa.eu",
     "ec.europa.eu",
     "facebook.com",
     "linkedin.com",

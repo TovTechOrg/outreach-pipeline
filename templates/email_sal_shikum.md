@@ -1,154 +1,121 @@
-# Email Templates — סל שיקום (Rehabilitation Basket)
+# Custom Campaign Template Example — Non-English Outreach
 
-**Two campaigns, same contacts, separate tracking:**
-1. **TovPlay סל שיקום** (`sal_shikum_tovplay`) — סדנת פיתוח משחקים ב-AI
-2. **TovTech סל שיקום** (`sal_shikum_tovtech`) — קורס Data & AI + חממה תעסוקתית
+This file shows how to create a campaign that targets a specific audience in a non-English language.
 
-**Target:** מנהלי מסגרות שיקום פסיכיאטרי — הוסטלים, דיור מוגן, מועדונים, תעסוקה
-**Language:** Hebrew (RTL)
-
----
-
-# Campaign 1: TovPlay סל שיקום (`sal_shikum_tovplay`)
-
-**CTA:** כניסה לדף נחיתה עם הרצאת השיעור הראשון
-
-## Initial Email
-
-**Subject:** סדנת משחקי AI למשתקמים של {org_name}
-
-שלום {contact_name},
-
-אני רז מ-TovTech — בית טכנולוגי לאנשים עם מוגבלויות (tovtech.org).
-
-אני פונה כי אני חושב שהסדנה שלנו יכולה להיות פעילות מעולה עבור מקבלי השירות של {org_name}.
-
-TovPlay היא סדנת פיתוח משחקים ב-AI — שישה מפגשים מרוחקים בזום, שבהם המשתתפים בונים משחקי מחשב אמיתיים, בלי לכתוב שורת קוד אחת. הם מכוונים את ה-AI, מקבלים החלטות עיצוב, ובסוף כל מפגש יש להם מוצר עובד שאפשר לשחק בו ולהראות לאחרים.
-
-למה מסגרות שיקום בוחרות בזה:
-✅ כבר במפגש הראשון — יש משחק עובד. חוויית הצלחה מיידית
-✅ אפס דרישות קדם — מתאים לכל רמה, בלי חסם טכנולוגי
-✅ בסוף הסדנה כל משתתף מקבל תיק עבודות אונליין — קישור חי לשים בקו״ח
-✅ מיומנויות עבודה עם AI — מה שמעסיקים מחפשים היום
-
-המחיר למקבלי שירות: 599 ₪ לסדנה המלאה (שישה מפגשים של שעה וחצי) — מחיר מיוחד לאנשים עם מוגבלויות.
-
-הכנתי הרצאה של השיעור הראשון כדי שתוכלו לראות בדיוק מה המשתקמים מקבלים:
-👈 https://youtu.be/N_FPSriLw7Y
-
-מקבלי השירות שלכם מוזמנים להירשם ישירות באתר — tovplay.org
-
-רז
-TovTech | tovtech.org
-058-4431931 | raz@tovtech.org
+Use this as a starting point when:
+- Your target audience communicates in a language other than English
+- You have a specific contact list (not the generic Tier1/2/3 pipeline)
+- You want a shorter, simpler email sequence (2-3 emails max)
 
 ---
 
-## Follow-up 1 (Day 3)
+## Setup overview
 
-**Subject:** Re: סדנת משחקי AI למשתקמים של {org_name}
+1. **Prepare your contact CSV** with at minimum: `org_name`, `email`, `contact_name` (optional)
+2. **Import contacts** via `step0_import.py --campaign my_campaign --csv data/my_contacts.csv`
+3. **Add email logic** to `step6_send_emails.py` in the `build_email()` function
+4. **Add to workflow** by adding a step to `.github/workflows/outreach.yml`
+5. **Add to dashboard** by adding an entry to `CAMPAIGN_COLLECTIONS` in `cloudflare/functions/api/stats.js`
 
-שלום {contact_name},
-
-רציתי לוודא שהמייל הקודם הגיע.
-
-בקצרה — פיתחנו סדנה שבה משתתפים בונים משחקי מחשב אמיתיים עם AI, בלי רקע טכני. מסגרות שיקום משתמשות בזה כפעילות שמשלבת חוויית הצלחה עם מיומנויות תעסוקתיות.
-
-אפשר לצפות בהרצאה של השיעור הראשון כאן:
-👈 https://youtu.be/N_FPSriLw7Y
-
-רז | TovTech | tovtech.org
-058-4431931 | raz@tovtech.org
+See `docs/campaigns.md` for detailed instructions.
 
 ---
 
-## Follow-up 2 (Day 7 — breakup)
+## Example: Custom Campaign (`my_campaign`)
 
-**Subject:** Re: סדנת משחקי AI למשתקמים של {org_name}
-
-שלום {contact_name},
-
-הודעה אחרונה ממני — לא רוצה להציף.
-
-אם סדנת AI למשתקמים של {org_name} רלוונטית בעתיד, אשמח לשמוע. אם לא, מאחל בהצלחה.
-
-הקישור להרצאה נשאר פתוח: https://youtu.be/N_FPSriLw7Y
-הרשמה לסדנה: tovplay.org
-
-רז | raz@tovtech.org | tovtech.org
+**Target:** [Describe your target audience and language]
+**Language:** [e.g. French, German, Hebrew, Spanish]
+**Sequence:** Initial + Follow-up 1 + Follow-up 2 (breakup)
 
 ---
 
-# Campaign 2: TovTech סל שיקום (`sal_shikum_tovtech`)
+### Initial Email
 
-**CTA:** כניסה לעמוד התוכניות של TovTech
+**Subject:** [Your subject line — in target language]
 
-## Initial Email
+[Greeting] {contact_name},
 
-**Subject:** תוכניות הכשרה טכנולוגית למשתקמים של {org_name}
+[Opening — who you are and why you're writing. 2-3 sentences.]
 
-שלום {contact_name},
+[What you offer and why it's relevant to {org_name}. 3-4 sentences.]
 
-אני רז מ-TovTech — בית טכנולוגי לאנשים עם מוגבלויות (tovtech.org).
+[Key benefits — use bullet points if helpful:]
+- [Benefit 1]
+- [Benefit 2]
+- [Benefit 3]
 
-אני פונה כי אני חושב שהתוכניות שלנו יכולות לפתוח דלת אמיתית לתעסוקה עבור מקבלי השירות של {org_name}.
+[Link to more information or a demo]
 
-אנחנו מפעילים שתי תוכניות שמיועדות במיוחד למשתקמים בסל שיקום:
-
-קורס Data & AI — הצעד הראשון לקריירה בהייטק
-✅ לימוד Python, ניתוח נתונים ו-AI — מאפס, בלי רקע טכנולוגי קודם
-✅ שלב א׳: לימוד עצמי מודרך (שלושה עד ארבעה חודשים)
-✅ שלב ב׳: חממה תעסוקתית — עבודה בצוותים על פרויקטים אמיתיים
-✅ שלב ג׳: ליווי אישי בחיפוש עבודה — קו״ח, הכנה לראיונות, חיבור למעסיקים
-✅ ממומן דרך שירותי השיקום — דמי רצינות של 500 ₪ בלבד
-
-החממה התעסוקתית — לבוגרי לימודים או קורסים
-✅ שילוב בצוותי פיתוח שעובדים על פרויקטים אמיתיים (רבים מבוססי AI)
-✅ עבודה עם כלים מהתעשייה: Slack, Jira, Git
-✅ בניית תיק עבודות והמלצות מקצועיות
-✅ ימים ב׳-ה׳, 09:00-13:00 — שישה עד תשעה חודשים
-
-שתי התוכניות פתוחות לבעלי נכות מוכרת של 40% ומעלה, כולל מי שמגיעים דרך סל שיקום.
-
-פרטים מלאים כאן:
-👈 tovtech.org/he/programs
-
-מקבלי השירות שלכם מוזמנים לפנות אלינו ישירות — tovtech.org
-
-רז
-TovTech | tovtech.org
-058-4431931 | raz@tovtech.org
+[Your name]
+[Your Org] | [your website]
+[phone] | [email]
 
 ---
 
-## Follow-up 1 (Day 3)
+### Follow-up 1 (Day 3)
 
-**Subject:** Re: תוכניות הכשרה טכנולוגית למשתקמים של {org_name}
+**Subject:** Re: [Original subject] — {org_name}
 
-שלום {contact_name},
+[Greeting] {contact_name},
 
-רציתי לוודא שהמייל הקודם הגיע.
+[Brief follow-up — confirm the previous email arrived. 1 sentence.]
 
-בקצרה — אנחנו מפעילים קורס Data & AI וחממה תעסוקתית למשתקמים עם נכות מוכרת. התוכניות ממומנות דרך שירותי השיקום ומובילות לתעסוקה אמיתית בהייטק.
+[Restate the core offer in one sentence. Include the link again.]
 
-פרטים מלאים:
-👈 tovtech.org/he/programs
-
-רז | TovTech | tovtech.org
-058-4431931 | raz@tovtech.org
+[Your name] | [Your Org] | [your website]
 
 ---
 
-## Follow-up 2 (Day 7 — breakup)
+### Follow-up 2 (Day 7 — breakup)
 
-**Subject:** Re: תוכניות הכשרה טכנולוגית למשתקמים של {org_name}
+**Subject:** Re: [Original subject] — {org_name}
 
-שלום {contact_name},
+[Greeting] {contact_name},
 
-הודעה אחרונה ממני — לא רוצה להציף.
+[Last message — keep it gracious and brief. 2-3 sentences.]
 
-אם תוכניות ההכשרה הטכנולוגית שלנו רלוונטיות למשתקמים של {org_name} בעתיד, אשמח לשמוע. אם לא, מאחל בהצלחה.
+[If {org_name} might be relevant in the future, the door is open.]
 
-הקישור נשאר פתוח: tovtech.org/he/programs
+[Your name] | [email] | [website]
 
-רז | raz@tovtech.org | tovtech.org
+---
+
+## Code snippet — adding to step6_send_emails.py
+
+In the `build_email()` function, add:
+
+```python
+elif tier == "my_campaign":
+    name = contact.get("contact_name") or ""
+    if email_type == "initial":
+        return (
+            f"[Subject for {org_short}]",
+            f"""[Greeting] {name},
+
+[Your email body here.]
+
+{SIG_FULL}"""
+        )
+    elif email_type == "followup1":
+        return (
+            f"Re: [Subject] — {org_short}",
+            f"""[Greeting] {name},
+
+[Follow-up body.]
+
+{SIG_SLIM}"""
+        )
+    elif email_type == "followup2":
+        return (
+            f"Re: [Subject] — {org_short}",
+            f"""[Greeting] {name},
+
+[Breakup email body.]
+
+{SIG_SLIM}"""
+        )
+    else:
+        return None, None
+```
+
+For RTL languages (Hebrew, Arabic), pass `rtl=True` to `send_email()` in `send_initial_emails()` and `send_followups()`.

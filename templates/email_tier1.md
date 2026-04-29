@@ -1,72 +1,103 @@
-# Email Template — Tier 1 (Disability + Employment orgs)
-**Strategy: Expert Advice Request + Erasmus+ Future Partner**
+# Email Template — Tier 1 (High-Relevance Prospects)
+**Strategy: Expert Advice Request + Future Partnership Angle**
+
+Tier 1 contacts have the highest relevance score — they work directly with your target population. Use AI-extracted personalization fields (`specific_achievement`, `their_population`) to make each email feel individually researched.
+
+---
+
+## Placeholders used
+
+| Placeholder | Source | Example |
+|-------------|--------|---------|
+| `[ORG_NAME]` | `org_name` field | "Youth Forward Foundation" |
+| `[PROJECT_NAME]` | `project_name` field | "Skills for Tomorrow" |
+| `[SPECIFIC_ACHIEVEMENT]` | AI-extracted by step5 | "three-stage upskilling pathway for adults with health conditions" |
+| `[THEIR_POPULATION]` | AI-extracted by step5 | "young adults with learning difficulties" |
+| `[YOUR_NAME]` | Your name from config | "Alex" |
+| `[YOUR_ORG]` | Your org from config | "Acme Org" |
+| `[YOUR_WEBSITE]` | Your website from config | "acme.org" |
+| `[YOUR_EMAIL]` | Your email from config | "alex@acme.org" |
+| `[YOUR_OFFER]` | Your product/course/service | "a 6-session AI skills course" |
+| `[PORTFOLIO_LINK]` | Tracked link to your portfolio | auto-inserted |
 
 ---
 
 ## Initial Email
 
-**Subject:** Your [PROJECT_NAME] work + an idea from Israel
+**Subject:** Your [PROJECT_NAME] work + an idea from [YOUR_ORG]
 
-Dear team at [ORG_NAME],
+Hi,
 
-I came across your [PROJECT_NAME] project — [SPECIFIC_ACHIEVEMENT] genuinely caught my attention.
+I noticed [ORG_NAME]'s work on [PROJECT_NAME] — specifically [SPECIFIC_ACHIEVEMENT]. That's genuinely impressive.
 
-I'm Raz from TovTech (Israel, Erasmus+ OID: E10412123). We run a 6-session course where participants — including those who've never touched a computer — build real games and portfolio websites, zero coding needed. The skill that stays with them is confidence: knowing they can create something and show it to an employer.
+I'm [YOUR_NAME] from [YOUR_ORG] ([YOUR_WEBSITE]). We [describe your org and what makes it relevant in 1-2 sentences].
 
-Here's what one pilot participant built after 6 sessions: [PORTFOLIO_LINK]
+[Describe your core offering in 2-3 sentences. What is it? Who is it for? What outcome does it produce?]
 
-I'd love to hear whether this kind of approach resonates with what [ORG_NAME] has learned about [THEIR_POPULATION] — and whether it could fit a future Erasmus+ cooperation.
+[Include a concrete proof point or example: "Here's what one participant built: [PORTFOLIO_LINK]"]
 
-Would a 15-minute call next week work?
+I think there might be an interesting overlap with what [ORG_NAME] does for [THEIR_POPULATION]. [Specific ask — e.g. "Would it be useful if I sent you our Session 1 materials?"] No cost, no commitment.
 
-Raz
-CEO, TovTech | tovtech.org
-Erasmus+ OID: E10412123
+[YOUR_NAME]
+[YOUR_ORG] | [YOUR_WEBSITE]
+[YOUR_EMAIL]
 
 ---
 
 ## Follow-up 1 (Day 3)
 
-**Subject:** Re: Your [PROJECT_NAME] work + an idea from Israel
+**Subject:** Re: Your [PROJECT_NAME] work + an idea from [YOUR_ORG]
 
 Hi,
 
-Following up on my note — I realize I should share more context on the methodology.
+[Short follow-up — add context you didn't include in the initial email.]
 
-In our pilot, a 19-year-old with learning difficulties who had never used a computer went from zero to 5 published games in 6 sessions. What stayed with him wasn't the technology — it was the confidence that he could build something real and show it to the world.
+[e.g. "In our pilot, a participant with [condition] who had never used a computer went from zero to [result] in [timeframe]."]
 
-We're looking for 2-3 experienced partners for a Joint Learning Exchange to test this with [THEIR_POPULATION]. Full materials provided, no cost — we just want honest feedback from practitioners like [ORG_NAME].
+[New angle or offer — e.g. "We're looking for 2-3 partners to test this with [THEIR_POPULATION]. Full materials provided, no cost."]
 
 Worth a quick call?
 
-Raz | TovTech | OID: E10412123
+[YOUR_NAME] | [YOUR_ORG] | [YOUR_WEBSITE]
 
 ---
 
 ## Follow-up 2 (Day 7)
 
-**Subject:** Re: Your [PROJECT_NAME] work + an idea from Israel
+**Subject:** Re: [PROJECT_NAME] + [YOUR_ORG]
 
 Hi,
 
-One thing I forgot to mention — we're preparing an Erasmus+ KA2 cooperation proposal for the next deadline, and we're looking for partners with experience in [RELEVANT_THEME].
+[Add a new hook — e.g. a partnership opportunity, upcoming deadline, or relevant program they might benefit from.]
 
-[ORG_NAME]'s work on [PROJECT_NAME] is exactly the kind of expertise we'd want on the consortium. Would you be open to exploring this together?
+[[ORG_NAME]'s work on [PROJECT_NAME] is exactly the kind of expertise we'd want for [specific reason].]
 
-Happy to send over a one-page concept note.
+[Soft ask — e.g. "Would you be open to exploring this together? Happy to send a one-page concept note."]
 
-Raz | TovTech | raz@tovtech.org
+[YOUR_NAME] | [YOUR_ORG] | [YOUR_EMAIL]
 
 ---
 
 ## Follow-up 3 (Day 14 — breakup)
 
-**Subject:** Last note — TovTech + [ORG_NAME]
+**Subject:** Last note — [YOUR_ORG] + [ORG_NAME]
 
 Hi,
 
 I'll keep this short — I know inboxes are brutal.
 
-If AI skills for [THEIR_POPULATION] or an Erasmus+ partnership is ever on your radar, my door is open. If not, I genuinely wish [ORG_NAME] all the best with [PROJECT_NAME].
+If [your offer] or [partnership topic] is ever on your radar, my door is open. If not, I genuinely wish [ORG_NAME] all the best with [PROJECT_NAME].
 
-Raz | raz@tovtech.org | tovtech.org
+[YOUR_NAME] | [YOUR_EMAIL] | [YOUR_WEBSITE]
+
+---
+
+## If They Respond Positively → Transition to Discovery
+
+Once they express interest, move to a discovery call (see `templates/discovery_call_script.md`).
+
+Key things to learn:
+- Who exactly are their participants? What's their typical background?
+- What's the biggest barrier they see for [your topic area]?
+- What does a successful outcome look like for them?
+- Are they looking for partnerships or external programs?

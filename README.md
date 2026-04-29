@@ -1,6 +1,6 @@
 # BizDev Outreach Pipeline
 
-A fully automated B2B outreach engine built for Erasmus+ partnership prospecting. Discovers contacts from public databases, personalizes emails with AI, sends daily via Gmail, handles follow-ups, tracks engagement, and presents a live dashboard — all with zero manual work after setup.
+A fully automated B2B outreach engine. Discovers contacts from any public database or CSV, personalizes emails with AI, sends daily via Gmail, handles follow-ups, tracks engagement, and presents a live dashboard — all with zero manual work after setup.
 
 **Stack:** Python · Firebase Firestore · Gmail API · Google Gemini AI · Cloudflare Pages · GitHub Actions
 
@@ -75,6 +75,8 @@ cp .env.example .env
 
 Place your source CSV in `data/raw_orgs.csv`. The pipeline expects columns:
 `org_name`, `country`, `city`, `website` (optional), `email` (optional), and any enrichment fields you want to filter on.
+
+Customize `pipeline/step1_filter.py` to match your CSV schema and scoring logic.
 
 See [docs/pipeline-reference.md](docs/pipeline-reference.md) for the full data schema.
 
@@ -186,7 +188,7 @@ All pipeline settings live in [pipeline/config.py](pipeline/config.py). The most
 
 ## Campaigns
 
-The system supports multiple named campaigns, each with isolated data and stats. The default campaign is `erasmus` (Erasmus+ organizations). You can add custom campaigns for any audience.
+The system supports multiple named campaigns, each with isolated data and stats. The default campaign is `main`. You can add custom campaigns for any audience.
 
 See [docs/campaigns.md](docs/campaigns.md) for full instructions on creating a new campaign.
 

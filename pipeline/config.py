@@ -1,5 +1,5 @@
 """
-Global configuration for the TovPlay outreach pipeline.
+Global configuration for the outreach pipeline.
 Change values here — all scripts pick them up automatically.
 """
 
@@ -37,7 +37,7 @@ FOLLOWUP3_DAYS = 14
 SIG_FULL = (
     "Your Name\n"
     "CEO, Your Org | yourorg.com\n"
-    "Erasmus+ OID: E00000000"  # Optional — remove if not an Erasmus+ partner
+    "Partnership ID: XXXXXXXX"  # Optional — add any relevant credential or remove this line
 )
 
 SIG_MID = "Your Name | Your Org | yourorg.com"

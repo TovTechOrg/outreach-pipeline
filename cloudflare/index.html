@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TovTech Outreach Dashboard</title>
+<title>Outreach Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   :root {
@@ -83,7 +83,6 @@
   .tier-card.t1 .tier-name { color:var(--primary); }
   .tier-card.t2 .tier-name { color:var(--accent); }
   .tier-card.t3 .tier-name { color:var(--warn); }
-  .tier-card.t-shikum .tier-name { color:var(--accent); }
   .tier-row {
     display:flex; justify-content:space-between; align-items:center;
     font-size:.78rem; padding:.25rem 0; border-bottom:1px solid rgba(255,255,255,.04);
@@ -129,22 +128,14 @@
 
 <div class="topbar">
   <div class="topbar-left">
-    <div class="logo"><span>TovTech</span> Outreach</div>
-    <div class="badge">Live Dashboard</div>
+    <div class="logo"><span>Outreach</span> Dashboard</div>
+    <div class="badge">Live</div>
   </div>
   <div class="last-update" id="lastUpdate">Loading...</div>
 </div>
 
 <div class="campaign-tabs" id="campaignTabs">
-  <button class="campaign-tab active" onclick="switchCampaign('erasmus', this)">
-    Erasmus+ <span class="tab-count" id="countErasmus"></span>
-  </button>
-  <button class="campaign-tab" onclick="switchCampaign('sal_shikum_tovplay', this)">
-    TovPlay סל שיקום <span class="tab-count" id="countTovplay"></span>
-  </button>
-  <button class="campaign-tab" onclick="switchCampaign('sal_shikum_tovtech', this)">
-    TovTech סל שיקום <span class="tab-count" id="countTovtech"></span>
-  </button>
+  <!-- Campaign tabs are rendered dynamically from the API response -->
 </div>
 
 <main>
@@ -156,7 +147,7 @@
       <div class="stat-sub" id="sInitial">—</div>
     </div>
     <div class="stat-card blue">
-      <div class="stat-label">Clicked Portfolio</div>
+      <div class="stat-label">Clicked</div>
       <div class="stat-value" id="sClicked">—</div>
       <div class="stat-sub">unique contacts</div>
     </div>
@@ -207,91 +198,48 @@
 
 <script>
 let timelineChart, funnelChart
-let currentCampaign = 'erasmus'
+let currentCampaign = 'main'
+let availableCampaigns = ['main']
 
 const fmt     = (n) => n != null ? Number(n).toLocaleString() : '—'
 const pct     = (a, b) => b > 0 ? (a / b * 100).toFixed(1) + '%' : '0%'
 const fmtDate = (d) => d ? String(d).slice(0, 10) : ''
 
-// Campaign config
-const CAMPAIGNS = {
-  erasmus: {
-    tiers: ['Tier1', 'Tier2', 'Tier3'],
-    tierColors: { Tier1: '#00ff88', Tier2: '#00d4ff', Tier3: '#ffb800' },
-    tierClasses: { Tier1: 't1', Tier2: 't2', Tier3: 't3' },
-    tableHeaders: '<tr><th>Organization</th><th>Country</th><th>Tier</th><th>Status</th><th>Clicks</th><th>Sent</th><th>Replied</th></tr>',
-    filters: [
-      { label: 'All',     tier: '', status: '', replied: '' },
-      { label: 'Replied', tier: '', status: '', replied: 'true' },
-      { label: 'Waiting', tier: '', status: 'initial_sent', replied: '' },
-      { label: 'Bounced', tier: '', status: 'bounced', replied: '' },
-      { label: 'Tier1',   tier: 'Tier1', status: '', replied: '' },
-    ],
-    renderRow: (c) => `
-      <tr>
-        <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(c.org_name)}">${esc(c.org_name)}</td>
-        <td>${esc(c.country || '')}</td>
-        <td style="font-size:.7rem;color:${c.tier === 'Tier1' ? 'var(--primary)' : c.tier === 'Tier2' ? 'var(--accent)' : 'var(--warn)'}">${c.tier}</td>
-        <td><span class="status-badge s-${c.status}">${(c.status || '').replace(/_/g,' ')}</span></td>
-        <td style="text-align:center">${c.click_count || 0}</td>
-        <td style="color:var(--dim)">${fmtDate(c.initial_sent_at)}</td>
-        <td style="color:${c.replied_at ? 'var(--primary)' : 'var(--dim)'}">${fmtDate(c.replied_at) || '—'}</td>
-      </tr>`,
-  },
-  sal_shikum_tovplay: {
-    tiers: ['sal_shikum_tovplay'],
-    tierColors: { sal_shikum_tovplay: '#00d4ff' },
-    tierClasses: { sal_shikum_tovplay: 't-shikum' },
-    tableHeaders: '<tr><th>ארגון</th><th>איש קשר</th><th>סטטוס</th><th>קליקים</th><th>נשלח</th><th>תגובה</th></tr>',
-    filters: [
-      { label: 'הכל',      tier: '', status: '', replied: '' },
-      { label: 'הגיבו',    tier: '', status: '', replied: 'true' },
-      { label: 'ממתינים',  tier: '', status: 'initial_sent', replied: '' },
-      { label: 'חזרו',     tier: '', status: 'bounced', replied: '' },
-    ],
-    renderRow: (c) => `
-      <tr>
-        <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:rtl" title="${esc(c.org_name)}">${esc(c.org_name)}</td>
-        <td style="direction:rtl">${esc(c.contact_name || '')}</td>
-        <td><span class="status-badge s-${c.status}">${statusHe(c.status)}</span></td>
-        <td style="text-align:center">${c.click_count || 0}</td>
-        <td style="color:var(--dim)">${fmtDate(c.initial_sent_at)}</td>
-        <td style="color:${c.replied_at ? 'var(--primary)' : 'var(--dim)'}">${fmtDate(c.replied_at) || '—'}</td>
-      </tr>`,
-  },
-  sal_shikum_tovtech: {
-    tiers: ['sal_shikum_tovtech'],
-    tierColors: { sal_shikum_tovtech: '#ffb800' },
-    tierClasses: { sal_shikum_tovtech: 't-shikum' },
-    tableHeaders: '<tr><th>ארגון</th><th>איש קשר</th><th>סטטוס</th><th>קליקים</th><th>נשלח</th><th>תגובה</th></tr>',
-    filters: [
-      { label: 'הכל',      tier: '', status: '', replied: '' },
-      { label: 'הגיבו',    tier: '', status: '', replied: 'true' },
-      { label: 'ממתינים',  tier: '', status: 'initial_sent', replied: '' },
-      { label: 'חזרו',     tier: '', status: 'bounced', replied: '' },
-    ],
-    renderRow: (c) => `
-      <tr>
-        <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:rtl" title="${esc(c.org_name)}">${esc(c.org_name)}</td>
-        <td style="direction:rtl">${esc(c.contact_name || '')}</td>
-        <td><span class="status-badge s-${c.status}">${statusHe(c.status)}</span></td>
-        <td style="text-align:center">${c.click_count || 0}</td>
-        <td style="color:var(--dim)">${fmtDate(c.initial_sent_at)}</td>
-        <td style="color:${c.replied_at ? 'var(--primary)' : 'var(--dim)'}">${fmtDate(c.replied_at) || '—'}</td>
-      </tr>`,
-  },
+// Default campaign config — works for Tier1/2/3 standard campaigns
+const DEFAULT_CAMPAIGN_CONFIG = {
+  tiers: ['Tier1', 'Tier2', 'Tier3'],
+  tierColors: { Tier1: '#00ff88', Tier2: '#00d4ff', Tier3: '#ffb800' },
+  tierClasses: { Tier1: 't1', Tier2: 't2', Tier3: 't3' },
+  tableHeaders: '<tr><th>Organization</th><th>Country</th><th>Tier</th><th>Status</th><th>Clicks</th><th>Sent</th><th>Replied</th></tr>',
+  filters: [
+    { label: 'All',     tier: '', status: '', replied: '' },
+    { label: 'Replied', tier: '', status: '', replied: 'true' },
+    { label: 'Waiting', tier: '', status: 'initial_sent', replied: '' },
+    { label: 'Bounced', tier: '', status: 'bounced', replied: '' },
+    { label: 'Tier1',   tier: 'Tier1', status: '', replied: '' },
+  ],
+  renderRow: (c) => `
+    <tr>
+      <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(c.org_name)}">${esc(c.org_name)}</td>
+      <td>${esc(c.country || '')}</td>
+      <td style="font-size:.7rem;color:${c.tier === 'Tier1' ? 'var(--primary)' : c.tier === 'Tier2' ? 'var(--accent)' : 'var(--warn)'}">${c.tier}</td>
+      <td><span class="status-badge s-${c.status}">${(c.status || '').replace(/_/g,' ')}</span></td>
+      <td style="text-align:center">${c.click_count || 0}</td>
+      <td style="color:var(--dim)">${fmtDate(c.initial_sent_at)}</td>
+      <td style="color:${c.replied_at ? 'var(--primary)' : 'var(--dim)'}">${fmtDate(c.replied_at) || '—'}</td>
+    </tr>`,
+}
+
+function getCampaignConfig(campaign) {
+  // Returns display config for a campaign.
+  // All campaigns use the default config unless overridden here.
+  // To customize a campaign's display, add a case below.
+  return DEFAULT_CAMPAIGN_CONFIG
 }
 
 function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
 
-function statusHe(s) {
-  const map = { pending: 'ממתין', initial_sent: 'נשלח', followup1_sent: 'פולואפ 1',
-    followup2_sent: 'פולואפ 2', replied: 'הגיב', bounced: 'חזר', ai_replied: 'AI הגיב' }
-  return map[s] || (s || '').replace(/_/g, ' ')
-}
-
 function showLoading() {
-  // Clear all data immediately
   document.getElementById('sSent').textContent = '—'
   document.getElementById('sInitial').textContent = '—'
   document.getElementById('sClicked').textContent = '—'
@@ -302,10 +250,17 @@ function showLoading() {
   document.getElementById('tierGrid').innerHTML = ''
   if (timelineChart) { timelineChart.destroy(); timelineChart = null }
   if (funnelChart) { funnelChart.destroy(); funnelChart = null }
-  const cfg = CAMPAIGNS[currentCampaign]
-  const colCount = currentCampaign.startsWith('sal_shikum') ? 6 : 7
   document.getElementById('contactsBody').innerHTML =
-    `<tr><td colspan="${colCount}" style="color:var(--dim);text-align:center;padding:2rem;">Loading...</td></tr>`
+    `<tr><td colspan="7" style="color:var(--dim);text-align:center;padding:2rem;">Loading...</td></tr>`
+}
+
+function renderCampaignTabs(campaigns, counts) {
+  const container = document.getElementById('campaignTabs')
+  container.innerHTML = campaigns.map(c =>
+    `<button class="campaign-tab${c === currentCampaign ? ' active' : ''}" onclick="switchCampaign('${c}', this)">
+      ${c} <span class="tab-count">${counts[c] ? '(' + fmt(counts[c]) + ')' : ''}</span>
+    </button>`
+  ).join('')
 }
 
 function switchCampaign(campaign, btn) {
@@ -320,7 +275,12 @@ async function loadStats() {
   const res  = await fetch(`/api/stats?campaign=${currentCampaign}`)
   const data = await res.json()
   const t    = data.totals || {}
-  const cfg  = CAMPAIGNS[currentCampaign]
+  const cfg  = getCampaignConfig(currentCampaign)
+
+  // Update campaign tabs if we got a campaign list
+  if (data.campaigns && data.campaigns.length > 0) {
+    availableCampaigns = data.campaigns
+  }
 
   document.getElementById('sSent').textContent      = fmt(t.sent)
   document.getElementById('sInitial').textContent   = `${fmt(t.initial_sent)} awaiting followup`
@@ -393,12 +353,11 @@ async function loadStats() {
   grid.innerHTML = cfg.tiers.map(tier => {
     const r = byTier[tier] || { total: 0, sent: 0, replied: 0, clicked: 0 }
     const replyRate = r.sent > 0 ? (r.replied / r.sent * 100).toFixed(1) : 0
-    const col = cfg.tierColors[tier]
-    const cls = cfg.tierClasses[tier]
-    const displayName = tier === 'sal_shikum_tovplay' ? 'TovPlay סל שיקום' : tier === 'sal_shikum_tovtech' ? 'TovTech סל שיקום' : tier
+    const col = cfg.tierColors[tier] || '#00ff88'
+    const cls = cfg.tierClasses[tier] || 't1'
     return `
       <div class="tier-card ${cls}">
-        <div class="tier-name">${displayName}</div>
+        <div class="tier-name">${tier}</div>
         <div class="tier-row"><span>Total</span><span class="tier-val">${fmt(r.total)}</span></div>
         <div class="tier-row"><span>Sent</span><span class="tier-val">${fmt(r.sent)}</span></div>
         <div class="tier-row"><span>Clicked</span><span class="tier-val">${fmt(r.clicked)}</span></div>
@@ -421,7 +380,7 @@ async function loadContacts(tier = '', status = '', replied = '') {
 }
 
 function renderFilterTabs() {
-  const cfg = CAMPAIGNS[currentCampaign]
+  const cfg = getCampaignConfig(currentCampaign)
   const container = document.getElementById('filterTabs')
   container.innerHTML = cfg.filters.map((f, i) =>
     `<button class="tab${i === 0 ? ' active' : ''}" onclick="filterTable(this,'${f.tier}','${f.status}','${f.replied}')">${f.label}</button>`
@@ -438,38 +397,43 @@ function filterTable(btn, tier, status, replied) {
 }
 
 function renderTable(contacts) {
-  const cfg = CAMPAIGNS[currentCampaign]
+  const cfg = getCampaignConfig(currentCampaign)
   const tbody = document.getElementById('contactsBody')
-  const colCount = currentCampaign.startsWith('sal_shikum') ? 6 : 7
   if (!contacts.length) {
-    tbody.innerHTML = `<tr><td colspan="${colCount}" style="color:var(--dim);text-align:center;padding:2rem;">No contacts found</td></tr>`
+    tbody.innerHTML = `<tr><td colspan="7" style="color:var(--dim);text-align:center;padding:2rem;">No contacts found</td></tr>`
     return
   }
   tbody.innerHTML = contacts.map(c => cfg.renderRow(c)).join('')
 }
 
 async function loadCampaignCounts() {
-  // Load counts for campaign tabs
-  const [erasmus, tovplay, tovtech] = await Promise.all([
-    fetch('/api/stats?campaign=erasmus').then(r => r.json()).catch(() => ({ totals: {} })),
-    fetch('/api/stats?campaign=sal_shikum_tovplay').then(r => r.json()).catch(() => ({ totals: {} })),
-    fetch('/api/stats?campaign=sal_shikum_tovtech').then(r => r.json()).catch(() => ({ totals: {} })),
-  ])
-  const eCount = document.getElementById('countErasmus')
-  const pCount = document.getElementById('countTovplay')
-  const tCount = document.getElementById('countTovtech')
-  if (eCount) eCount.textContent = erasmus.totals?.sent ? `(${fmt(erasmus.totals.sent)})` : ''
-  if (pCount) pCount.textContent = tovplay.totals?.sent ? `(${fmt(tovplay.totals.sent)})` : ''
-  if (tCount) tCount.textContent = tovtech.totals?.sent ? `(${fmt(tovtech.totals.sent)})` : ''
+  // Load sent counts for all available campaigns for the tab display
+  const results = await Promise.all(
+    availableCampaigns.map(c =>
+      fetch(`/api/stats?campaign=${c}`).then(r => r.json()).catch(() => ({ totals: {} }))
+    )
+  )
+  const counts = {}
+  availableCampaigns.forEach((c, i) => {
+    counts[c] = results[i].totals?.sent || 0
+  })
+  renderCampaignTabs(availableCampaigns, counts)
 }
 
 async function loadAll() {
   renderFilterTabs()
   await Promise.all([loadStats(), loadContacts()])
+  await loadCampaignCounts()
 }
 
 async function init() {
-  await Promise.all([loadAll(), loadCampaignCounts()])
+  // First load to get campaign list
+  const res = await fetch(`/api/stats?campaign=${currentCampaign}`)
+  const data = await res.json()
+  if (data.campaigns) availableCampaigns = data.campaigns
+
+  renderCampaignTabs(availableCampaigns, {})
+  await loadAll()
   setInterval(() => { loadStats(); loadCampaignCounts() }, 60_000)
 }
 init()

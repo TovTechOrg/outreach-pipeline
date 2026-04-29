@@ -45,7 +45,7 @@ export async function onRequestGet({ params, env }) {
 function htmlResponse(title, body, status) {
   return new Response(
     `<!DOCTYPE html><html><head><meta charset="utf-8">
-     <title>${title} — TovPlay Outreach</title>
+     <title>${title} — Outreach Pipeline</title>
      <style>body{font-family:Arial,sans-serif;max-width:600px;margin:60px auto;color:#222;line-height:1.6}
      h1{color:#2563eb}pre{background:#f3f4f6;padding:12px;border-radius:6px}</style>
      </head><body><h1>${title}</h1><p>${body}</p></body></html>`,

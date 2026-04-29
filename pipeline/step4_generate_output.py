@@ -11,25 +11,27 @@ FILTERED_CSV = os.path.join(os.path.dirname(__file__), "..", "data", "filtered_o
 OUTPUT_CSV   = os.path.join(os.path.dirname(__file__), "..", "data", "enriched_prospects.csv")
 
 # Email template hints embedded in the output
+# Customize these hints to match your campaign — they appear in enriched_prospects.csv
+# as a guide when writing email copy in step6_send_emails.py
 TEMPLATE_HINTS = {
     "Tier1": (
-        "Subject: Your [PROJECT_NAME] methodology + an idea from Israel | "
-        "Open: Reference the specific project + disability/employment angle | "
-        "Hook: AI skills for employment, zero coding barrier, portfolio evidence | "
-        "CTA: 15-min call to exchange notes | "
-        "Angle: future Erasmus+ partner (OID: E10412123)"
+        "Subject: [Your high-relevance subject line] | "
+        "Open: Reference the specific project or achievement | "
+        "Hook: [Your core value proposition for highest-fit prospects] | "
+        "CTA: 15-min call to explore fit | "
+        "Angle: [Your strongest partnership angle for this tier]"
     ),
     "Tier2": (
-        "Subject: Something we built that made me think of your [PROJECT_NAME] | "
-        "Open: Content gift — link to Session 1 demo + methodology PDF | "
-        "Hook: project-based AI literacy, students build real products every session | "
-        "CTA: Would this fit your cohort? Happy to share more | "
-        "Angle: pilot partnership / Joint Learning Exchange"
+        "Subject: [Your medium-relevance subject line] | "
+        "Open: Content gift or relevant resource | "
+        "Hook: [Your value proposition for medium-fit prospects] | "
+        "CTA: Would this fit your work? Happy to share more | "
+        "Angle: [Your partnership angle for this tier]"
     ),
     "Tier3": (
-        "Subject: A free AI course module — made me think of your work | "
-        "Open: Short intro + gift link | "
-        "Hook: from digital consumer to digital creator in 6 sessions | "
+        "Subject: [Your general subject line] | "
+        "Open: Short intro + free resource | "
+        "Hook: [Brief one-line value proposition] | "
         "CTA: Hope this sparks an idea. Happy to chat if useful | "
         "Angle: no-pressure content sharing"
     ),

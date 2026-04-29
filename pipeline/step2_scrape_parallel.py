@@ -42,7 +42,7 @@ DEFAULT_WORKERS  = 15      # concurrent threads
 EMAIL_RE = re.compile(r'[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}')
 
 PREFERRED_PREFIXES = [
-    "erasmus", "coordinator", "director", "manager", "info",
+    "coordinator", "director", "manager", "info",
     "contact", "office", "admin", "project", "education", "hr",
 ]
 

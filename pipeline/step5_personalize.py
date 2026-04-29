@@ -87,7 +87,7 @@ def call_gemini(prompt: str) -> dict:
 
 
 def personalize_tier1(org_name: str, project_titles: str, project_summaries: str) -> dict:
-    prompt = f"""You help write personalized cold emails to European NGOs in an Erasmus+ outreach campaign.
+    prompt = f"""You help write personalized cold B2B outreach emails.
 
 Organization: {org_name}
 Project titles: {project_titles[:400]}
@@ -103,9 +103,9 @@ Extract two short phrases for email personalization:
    Rules: Be concrete and specific to THIS org. Use a noun phrase, not a sentence. No filler words.
 
 2. their_population: The specific group this org serves. 3-7 words. Name them precisely — age, condition, situation.
-   Good examples: "young adults with learning difficulties", "adults with disabilities seeking employment", "displaced Ukrainian youth at NEET risk"
-   Bad examples: "young people with fewer opportunities" (Erasmus+ boilerplate — too vague), "young people for personal growth" (not a population description)
-   Rules: NEVER use generic Erasmus+ phrases. Be specific to THIS org's actual beneficiaries.
+   Good examples: "young adults with learning difficulties", "adults with disabilities seeking employment", "displaced youth at NEET risk"
+   Bad examples: "young people with fewer opportunities" (too vague), "young people for personal growth" (not a population description)
+   Rules: Be specific to THIS org's actual beneficiaries. Avoid boilerplate phrases.
 
 Respond with valid JSON only (no markdown, no explanation):
 {{"specific_achievement": "...", "their_population": "..."}}"""
@@ -114,7 +114,7 @@ Respond with valid JSON only (no markdown, no explanation):
 
 
 def personalize_tier2(org_name: str, project_titles: str, project_summaries: str) -> dict:
-    prompt = f"""Extract the main thematic focus of this Erasmus+ VET project in 3-6 words.
+    prompt = f"""Extract the main thematic focus of this organization's work in 3-6 words.
 
 Organization: {org_name}
 Project titles: {project_titles[:300]}

@@ -1,7 +1,14 @@
 """
-Step 1: Filter, deduplicate, and score Erasmus+ organizations.
-Input:  CSV file from Erasmus+ project database
+Step 1: Filter, deduplicate, and score organizations from your prospect database.
+Input:  Your raw prospect CSV (see CSV_PATH below)
 Output: data/filtered_orgs.csv
+
+Customize:
+  - CSV_PATH: path to your source CSV
+  - TARGET_ORG_TYPES: org types to include (based on a column in your CSV)
+  - KEYWORDS: relevance keywords and scores for your target audience
+  - score_text() / tier_from_score(): scoring logic
+  - The groupby/agg logic: adapt column names to your CSV schema
 """
 
 import pandas as pd
@@ -11,11 +18,12 @@ import sys
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
-CSV_PATH = os.path.join(os.path.dirname(__file__), "..",
-    "ErasmusPlus_KA1_2025_LearningMobilityOfIndividuals_Projects_Overview_2026-03-03.csv")
+# CUSTOMIZE: path to your source prospect CSV
+CSV_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "raw_orgs.csv")
 OUTPUT_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "filtered_orgs.csv")
 
-# Org types to include
+# CUSTOMIZE: org types to include (based on a column in your CSV).
+# Remove or replace with values relevant to your dataset.
 TARGET_ORG_TYPES = [
     "Non-governmental organisation/association/social enterprise",
     "School/Institute/Educational centre – Vocational Training (secondary level)",
@@ -26,7 +34,8 @@ TARGET_ORG_TYPES = [
     "Regional Public body",
 ]
 
-# Scoring keywords (checked against project titles + summaries, case-insensitive)
+# CUSTOMIZE: relevance scoring keywords for your target audience.
+# Higher score = better fit = higher tier = more personalized outreach.
 KEYWORDS = {
     "disability": 3,
     "disabilities": 3,
@@ -73,14 +82,14 @@ def tier_from_score(score: int) -> str:
 
 def outreach_strategy(tier: str) -> str:
     strategies = {
-        "Tier1": "Strategy 1+4: Expert advice request + Erasmus+ future partner angle",
-        "Tier2": "Strategy 3+2: Content gift email + pilot partnership offer",
+        "Tier1": "Strategy 1: Highly personalized — reference specific achievement + population",
+        "Tier2": "Strategy 2: Content gift email + pilot partnership offer",
         "Tier3": "Strategy 3: Content gift email (simple, no deep personalization needed)",
     }
     return strategies.get(tier, "")
 
 def main():
-    print(f"Loading CSV: {CSV_PATH}")
+    print(f"Loading prospect CSV: {CSV_PATH}")
     df = pd.read_csv(CSV_PATH, low_memory=False)
     print(f"  Total rows: {len(df):,}")
 

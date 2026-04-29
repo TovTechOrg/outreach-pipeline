@@ -82,7 +82,7 @@ gh run watch
 ```
 
 **Alternative — browser:**
-Go to **Actions** tab → select **"TovPlay Outreach Pipeline"** → **Run workflow** → mode: `dry-run` → **Run workflow**.
+Go to **Actions** tab → select **"Outreach Pipeline"** → **Run workflow** → mode: `dry-run` → **Run workflow**.
 
 ---
 

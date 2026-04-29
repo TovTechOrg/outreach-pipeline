@@ -24,7 +24,7 @@ Usage:
 Env vars required:
   SENDER_EMAIL      — Gmail account to send from
   GEMINI_API_KEY    — Google AI Studio API key
-  NOTIFY_EMAIL      — where to send approval emails (e.g. hrazhadas@gmail.com)
+  NOTIFY_EMAIL      — where to send approval emails (e.g. your-notify@email.com)
   TRACKING_BASE_URL — base URL of Cloudflare dashboard (for approve/skip links)
 """
 
@@ -268,7 +268,7 @@ def send_approval_email(service, pending_id: str, contact: dict,
     org  = contact.get("org_name", "Unknown")
     addr = contact.get("email", "")
 
-    subject = f"[TovPlay AI] Reply from {org} — approve draft?"
+    subject = f"[Outreach AI] Reply from {org} — approve draft?"
 
     body = f"""New reply received from {org} ({addr}).
 
@@ -408,7 +408,7 @@ def send_approved_replies(db, service, dry_run: bool):
 
         # Rebuild subject from thread (use "Re: <original subject>" pattern)
         messages = get_thread_messages(service, thread_id)
-        original_subject = get_subject(messages[0]) if messages else "Re: TovTech"
+        original_subject = get_subject(messages[0]) if messages else "Re: your message"
         if not original_subject.startswith("Re:"):
             original_subject = f"Re: {original_subject}"
 

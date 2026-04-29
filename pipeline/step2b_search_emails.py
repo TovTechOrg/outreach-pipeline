@@ -66,7 +66,7 @@ JUNK_PATTERNS = re.compile(
 )
 
 PREFERRED_PREFIXES = [
-    "erasmus", "coordinator", "director", "manager", "info",
+    "coordinator", "director", "manager", "info",
     "contact", "office", "admin", "project", "education",
 ]
 

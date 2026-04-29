@@ -1,6 +1,6 @@
 """
-System Test Suite — TovPlay Outreach Pipeline
-==============================================
+System Test Suite — Outreach Pipeline
+======================================
 Runs all automated checks and reports results.
 Manual tests (reply flow, approve link) are flagged clearly.
 
@@ -70,7 +70,7 @@ def t_sender_email():
 
 def t_tracking_base():
     from step6_send_emails import TRACKING_BASE
-    assert "bizdev-outreach" in TRACKING_BASE, f"Unexpected TRACKING_BASE: {TRACKING_BASE}"
+    assert TRACKING_BASE and TRACKING_BASE.startswith("http"), f"TRACKING_BASE not configured: {TRACKING_BASE!r}"
     return TRACKING_BASE
 
 def t_gemini_key():
@@ -180,7 +180,7 @@ test("Gemini API connect + generate", t_gemini_connect, skip_if_fast=True)
 print("\n━━━ 5. Email Pipeline Logic ━━━")
 
 def t_build_email_tier1():
-    from step6_send_emails import build_email
+    from step6_send_emails import build_email, PORTFOLIO_URL
     contact = {
         "org_name": "Test Org", "tier": "Tier1",
         "project_name": "Test Project", "specific_achievement": "great work",
@@ -189,8 +189,7 @@ def t_build_email_tier1():
     subj, body = build_email(contact, "initial", "fake-token-123")
     assert subj, "No subject"
     assert "Test Org" in body, "Org name missing from body"
-    assert "fake-token-123" in body or "portfolio" in body.lower(), "Portfolio link missing"
-    assert "tovtech.org" in body, "Signature missing"
+    assert "fake-token-123" in body or "portfolio" in body.lower() or PORTFOLIO_URL in body, "Portfolio link missing"
     return f"subject='{subj[:40]}...'"
 
 def t_build_email_all_types():
@@ -313,7 +312,8 @@ test("SENT label outbound detection",  t_sent_label_detection)
 
 print("\n━━━ 7. Cloudflare Endpoints ━━━")
 
-CF_BASE = "https://bizdev-outreach.pages.dev"
+import os as _os
+CF_BASE = _os.environ.get("TRACKING_BASE_URL", "https://your-dashboard.pages.dev")
 
 def http_get(path, auth=None, timeout=15):
     url = CF_BASE + path
@@ -352,16 +352,20 @@ def t_cf_skip_route():
     return f"status={status}"
 
 def t_cf_api_stats():
-    status, body = http_get("/api/stats", auth="admin:TovTech2026!")
-    assert status == 200, f"Stats API returned {status}"
+    # Uses DASHBOARD_PASSWORD env var if set; otherwise tries unauthenticated
+    pw = _os.environ.get("DASHBOARD_PASSWORD", "")
+    auth = f"admin:{pw}" if pw else None
+    status, body = http_get("/api/stats", auth=auth)
+    assert status == 200, f"Stats API returned {status} (set DASHBOARD_PASSWORD env var if auth is required)"
     data = json.loads(body)
     assert "totals" in data, f"No 'totals' in response: {list(data.keys())}"
     return f"sent={data['totals'].get('sent',0)} replied={data['totals'].get('replied',0)}"
 
 def t_cf_dashboard_loads():
-    status, body = http_get("/", auth="admin:TovTech2026!")
+    pw = _os.environ.get("DASHBOARD_PASSWORD", "")
+    auth = f"admin:{pw}" if pw else None
+    status, body = http_get("/", auth=auth)
     assert status == 200, f"Dashboard returned {status}"
-    assert "TovTech" in body, "Dashboard HTML missing TovTech"
     assert "sBounced" in body, "Bounced card not in dashboard HTML — may need redeploy"
     return "HTML OK, bounced card present"
 
