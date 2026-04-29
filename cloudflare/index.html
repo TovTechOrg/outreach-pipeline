@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TovTech Outreach Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #07080f; --card: #0e1018; --border: rgba(0,255,136,.13);
+    --primary: #00ff88; --accent: #00d4ff; --warn: #ffb800; --danger: #ff4466;
+    --text: #e0e8f0; --dim: #5a6070; --font: 'Inter',system-ui,sans-serif;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:var(--font); min-height:100vh; }
+
+  .topbar {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:1.2rem 2rem; border-bottom:1px solid var(--border);
+    background:rgba(14,16,24,.9); backdrop-filter:blur(8px);
+    position:sticky; top:0; z-index:10;
+  }
+  .topbar-left { display:flex; align-items:center; gap:1rem; }
+  .logo { font-size:1.05rem; font-weight:700; letter-spacing:.05em; }
+  .logo span { color:var(--primary); }
+  .badge { font-size:.7rem; background:rgba(0,255,136,.1); color:var(--primary);
+    border:1px solid var(--border); border-radius:20px; padding:.25rem .7rem; }
+  .last-update { font-size:.72rem; color:var(--dim); }
+
+  /* Campaign selector */
+  .campaign-tabs {
+    display:flex; gap:.5rem; padding:1.2rem 2rem .8rem;
+    max-width:1400px; margin:0 auto;
+  }
+  .campaign-tab {
+    font-size:.82rem; padding:.5rem 1.2rem; border-radius:8px; cursor:pointer;
+    border:1px solid var(--border); background:transparent; color:var(--dim);
+    transition:all .2s; font-weight:600; letter-spacing:.03em;
+  }
+  .campaign-tab:hover { border-color:rgba(0,255,136,.3); color:var(--text); }
+  .campaign-tab.active { background:rgba(0,255,136,.12); border-color:var(--primary); color:var(--primary); }
+  .campaign-tab .tab-count {
+    font-size:.68rem; font-weight:400; color:var(--dim);
+    margin-left:.4rem; opacity:.7;
+  }
+  .campaign-tab.active .tab-count { color:var(--primary); opacity:.8; }
+
+  main { max-width:1400px; margin:0 auto; padding:0 2rem 2rem; }
+
+  /* Stat cards */
+  .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:2rem; }
+  @media(max-width:800px){ .stats{grid-template-columns:repeat(2,1fr);} }
+  .stat-card {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:12px; padding:1.4rem 1.6rem; position:relative; overflow:hidden;
+  }
+  .stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+  .stat-card.green::before  { background:var(--primary); }
+  .stat-card.blue::before   { background:var(--accent); }
+  .stat-card.yellow::before { background:var(--warn); }
+  .stat-card.red::before    { background:var(--danger); }
+  .stat-label { font-size:.72rem; text-transform:uppercase; letter-spacing:.1em; color:var(--dim); margin-bottom:.5rem; }
+  .stat-value { font-size:2.2rem; font-weight:800; line-height:1; }
+  .stat-card.green  .stat-value { color:var(--primary); }
+  .stat-card.blue   .stat-value { color:var(--accent); }
+  .stat-card.yellow .stat-value { color:var(--warn); }
+  .stat-card.red    .stat-value { color:var(--danger); }
+  .stat-sub { font-size:.75rem; color:var(--dim); margin-top:.4rem; }
+
+  /* Charts */
+  .charts { display:grid; grid-template-columns:2fr 1fr; gap:1rem; margin-bottom:2rem; }
+  @media(max-width:900px){ .charts{grid-template-columns:1fr;} }
+  .chart-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:1.4rem; }
+  .chart-title { font-size:.8rem; text-transform:uppercase; letter-spacing:.08em; color:var(--dim); margin-bottom:1rem; }
+  .chart-wrap  { position:relative; height:200px; }
+
+  /* Tier breakdown */
+  .tier-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:2rem; }
+  .tier-grid.single-tier { grid-template-columns:1fr; max-width:400px; }
+  @media(max-width:700px){ .tier-grid{grid-template-columns:1fr;} }
+  .tier-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:1.2rem; }
+  .tier-name { font-size:.85rem; font-weight:700; margin-bottom:.8rem; }
+  .tier-card.t1 .tier-name { color:var(--primary); }
+  .tier-card.t2 .tier-name { color:var(--accent); }
+  .tier-card.t3 .tier-name { color:var(--warn); }
+  .tier-card.t-shikum .tier-name { color:var(--accent); }
+  .tier-row {
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:.78rem; padding:.25rem 0; border-bottom:1px solid rgba(255,255,255,.04);
+  }
+  .tier-row:last-child { border:none; }
+  .tier-val { font-weight:600; }
+  .bar { height:4px; background:rgba(255,255,255,.05); border-radius:2px; margin-top:.5rem; overflow:hidden; }
+  .bar-fill { height:100%; border-radius:2px; transition:width .5s; }
+
+  /* Contact table */
+  .table-card {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:12px; padding:1.4rem; margin-bottom:2rem; overflow-x:auto;
+  }
+  .table-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:.5rem; }
+  .table-title  { font-size:.8rem; text-transform:uppercase; letter-spacing:.08em; color:var(--dim); }
+  .filter-tabs  { display:flex; gap:.4rem; flex-wrap:wrap; }
+  .tab {
+    font-size:.72rem; padding:.3rem .8rem; border-radius:20px; cursor:pointer;
+    border:1px solid var(--border); background:transparent; color:var(--dim); transition:all .2s;
+  }
+  .tab.active { background:rgba(0,255,136,.1); border-color:var(--primary); color:var(--primary); }
+  table { width:100%; border-collapse:collapse; font-size:.8rem; }
+  th {
+    text-align:left; font-size:.68rem; text-transform:uppercase; letter-spacing:.08em;
+    color:var(--dim); padding:.5rem .75rem; border-bottom:1px solid var(--border);
+  }
+  td { padding:.55rem .75rem; border-bottom:1px solid rgba(255,255,255,.04); }
+  tr:last-child td { border:none; }
+  tr:hover td { background:rgba(255,255,255,.02); }
+  .status-badge { font-size:.65rem; padding:.2rem .55rem; border-radius:10px; white-space:nowrap; font-weight:600; }
+  .s-pending        { background:rgba(255,255,255,.06); color:var(--dim); }
+  .s-initial_sent   { background:rgba(0,212,255,.1);   color:var(--accent); }
+  .s-followup1_sent { background:rgba(255,184,0,.1);   color:var(--warn); }
+  .s-followup2_sent { background:rgba(255,100,0,.1);   color:#ff6400; }
+  .s-followup3_sent { background:rgba(255,60,0,.1);    color:#ff3c00; }
+  .s-replied        { background:rgba(0,255,136,.12);  color:var(--primary); }
+  .s-ai_replied     { background:rgba(0,255,136,.18);  color:var(--primary); }
+  .s-bounced        { background:rgba(255,68,102,.12); color:var(--danger); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo"><span>TovTech</span> Outreach</div>
+    <div class="badge">Live Dashboard</div>
+  </div>
+  <div class="last-update" id="lastUpdate">Loading...</div>
+</div>
+
+<div class="campaign-tabs" id="campaignTabs">
+  <button class="campaign-tab active" onclick="switchCampaign('erasmus', this)">
+    Erasmus+ <span class="tab-count" id="countErasmus"></span>
+  </button>
+  <button class="campaign-tab" onclick="switchCampaign('sal_shikum_tovplay', this)">
+    TovPlay סל שיקום <span class="tab-count" id="countTovplay"></span>
+  </button>
+  <button class="campaign-tab" onclick="switchCampaign('sal_shikum_tovtech', this)">
+    TovTech סל שיקום <span class="tab-count" id="countTovtech"></span>
+  </button>
+</div>
+
+<main>
+
+  <div class="stats">
+    <div class="stat-card green">
+      <div class="stat-label">Total Sent</div>
+      <div class="stat-value" id="sSent">—</div>
+      <div class="stat-sub" id="sInitial">—</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-label">Clicked Portfolio</div>
+      <div class="stat-value" id="sClicked">—</div>
+      <div class="stat-sub">unique contacts</div>
+    </div>
+    <div class="stat-card yellow">
+      <div class="stat-label">Replied</div>
+      <div class="stat-value" id="sReplied">—</div>
+      <div class="stat-sub" id="sReplyRate">—</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-label">Bounced</div>
+      <div class="stat-value" id="sBounced">—</div>
+      <div class="stat-sub" id="sBounceRate">—</div>
+    </div>
+  </div>
+
+  <div class="charts">
+    <div class="chart-card">
+      <div class="chart-title">Emails Sent — Last 30 Days</div>
+      <div class="chart-wrap"><canvas id="timelineChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Funnel</div>
+      <div class="chart-wrap"><canvas id="funnelChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="tier-grid" id="tierGrid"></div>
+
+  <div class="table-card">
+    <div class="table-header">
+      <div class="table-title">Contacts</div>
+      <div class="filter-tabs" id="filterTabs"></div>
+    </div>
+    <table>
+      <thead id="tableHead">
+        <tr>
+          <th>Organization</th><th>Country</th><th>Tier</th>
+          <th>Status</th><th>Clicks</th><th>Sent</th><th>Replied</th>
+        </tr>
+      </thead>
+      <tbody id="contactsBody">
+        <tr><td colspan="7" style="color:var(--dim);text-align:center;padding:2rem;">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</main>
+
+<script>
+let timelineChart, funnelChart
+let currentCampaign = 'erasmus'
+
+const fmt     = (n) => n != null ? Number(n).toLocaleString() : '—'
+const pct     = (a, b) => b > 0 ? (a / b * 100).toFixed(1) + '%' : '0%'
+const fmtDate = (d) => d ? String(d).slice(0, 10) : ''
+
+// Campaign config
+const CAMPAIGNS = {
+  erasmus: {
+    tiers: ['Tier1', 'Tier2', 'Tier3'],
+    tierColors: { Tier1: '#00ff88', Tier2: '#00d4ff', Tier3: '#ffb800' },
+    tierClasses: { Tier1: 't1', Tier2: 't2', Tier3: 't3' },
+    tableHeaders: '<tr><th>Organization</th><th>Country</th><th>Tier</th><th>Status</th><th>Clicks</th><th>Sent</th><th>Replied</th></tr>',
+    filters: [
+      { label: 'All',     tier: '', status: '', replied: '' },
+      { label: 'Replied', tier: '', status: '', replied: 'true' },
+      { label: 'Waiting', tier: '', status: 'initial_sent', replied: '' },
+      { label: 'Bounced', tier: '', status: 'bounced', replied: '' },
+      { label: 'Tier1',   tier: 'Tier1', status: '', replied: '' },
+    ],
+    renderRow: (c) => `
+      <tr>
+        <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(c.org_name)}">${esc(c.org_name)}</td>
+        <td>${esc(c.country || '')}</td>
+        <td style="font-size:.7rem;color:${c.tier === 'Tier1' ? 'var(--primary)' : c.tier === 'Tier2' ? 'var(--accent)' : 'var(--warn)'}">${c.tier}</td>
+        <td><span class="status-badge s-${c.status}">${(c.status || '').replace(/_/g,' ')}</span></td>
+        <td style="text-align:center">${c.click_count || 0}</td>
+        <td style="color:var(--dim)">${fmtDate(c.initial_sent_at)}</td>
+        <td style="color:${c.replied_at ? 'var(--primary)' : 'var(--dim)'}">${fmtDate(c.replied_at) || '—'}</td>
+      </tr>`,
+  },
+  sal_shikum_tovplay: {
+    tiers: ['sal_shikum_tovplay'],
+    tierColors: { sal_shikum_tovplay: '#00d4ff' },
+    tierClasses: { sal_shikum_tovplay: 't-shikum' },
+    tableHeaders: '<tr><th>ארגון</th><th>איש קשר</th><th>סטטוס</th><th>קליקים</th><th>נשלח</th><th>תגובה</th></tr>',
+    filters: [
+      { label: 'הכל',      tier: '', status: '', replied: '' },
+      { label: 'הגיבו',    tier: '', status: '', replied: 'true' },
+      { label: 'ממתינים',  tier: '', status: 'initial_sent', replied: '' },
+      { label: 'חזרו',     tier: '', status: 'bounced', replied: '' },
+    ],
+    renderRow: (c) => `
+      <tr>
+        <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:rtl" title="${esc(c.org_name)}">${esc(c.org_name)}</td>
+        <td style="direction:rtl">${esc(c.contact_name || '')}</td>
+        <td><span class="status-badge s-${c.status}">${statusHe(c.status)}</span></td>
+        <td style="text-align:center">${c.click_count || 0}</td>
+        <td style="color:var(--dim)">${fmtDate(c.initial_sent_at)}</td>
+        <td style="color:${c.replied_at ? 'var(--primary)' : 'var(--dim)'}">${fmtDate(c.replied_at) || '—'}</td>
+      </tr>`,
+  },
+  sal_shikum_tovtech: {
+    tiers: ['sal_shikum_tovtech'],
+    tierColors: { sal_shikum_tovtech: '#ffb800' },
+    tierClasses: { sal_shikum_tovtech: 't-shikum' },
+    tableHeaders: '<tr><th>ארגון</th><th>איש קשר</th><th>סטטוס</th><th>קליקים</th><th>נשלח</th><th>תגובה</th></tr>',
+    filters: [
+      { label: 'הכל',      tier: '', status: '', replied: '' },
+      { label: 'הגיבו',    tier: '', status: '', replied: 'true' },
+      { label: 'ממתינים',  tier: '', status: 'initial_sent', replied: '' },
+      { label: 'חזרו',     tier: '', status: 'bounced', replied: '' },
+    ],
+    renderRow: (c) => `
+      <tr>
+        <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:rtl" title="${esc(c.org_name)}">${esc(c.org_name)}</td>
+        <td style="direction:rtl">${esc(c.contact_name || '')}</td>
+        <td><span class="status-badge s-${c.status}">${statusHe(c.status)}</span></td>
+        <td style="text-align:center">${c.click_count || 0}</td>
+        <td style="color:var(--dim)">${fmtDate(c.initial_sent_at)}</td>
+        <td style="color:${c.replied_at ? 'var(--primary)' : 'var(--dim)'}">${fmtDate(c.replied_at) || '—'}</td>
+      </tr>`,
+  },
+}
+
+function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
+
+function statusHe(s) {
+  const map = { pending: 'ממתין', initial_sent: 'נשלח', followup1_sent: 'פולואפ 1',
+    followup2_sent: 'פולואפ 2', replied: 'הגיב', bounced: 'חזר', ai_replied: 'AI הגיב' }
+  return map[s] || (s || '').replace(/_/g, ' ')
+}
+
+function showLoading() {
+  // Clear all data immediately
+  document.getElementById('sSent').textContent = '—'
+  document.getElementById('sInitial').textContent = '—'
+  document.getElementById('sClicked').textContent = '—'
+  document.getElementById('sReplied').textContent = '—'
+  document.getElementById('sReplyRate').textContent = '—'
+  document.getElementById('sBounced').textContent = '—'
+  document.getElementById('sBounceRate').textContent = '—'
+  document.getElementById('tierGrid').innerHTML = ''
+  if (timelineChart) { timelineChart.destroy(); timelineChart = null }
+  if (funnelChart) { funnelChart.destroy(); funnelChart = null }
+  const cfg = CAMPAIGNS[currentCampaign]
+  const colCount = currentCampaign.startsWith('sal_shikum') ? 6 : 7
+  document.getElementById('contactsBody').innerHTML =
+    `<tr><td colspan="${colCount}" style="color:var(--dim);text-align:center;padding:2rem;">Loading...</td></tr>`
+}
+
+function switchCampaign(campaign, btn) {
+  currentCampaign = campaign
+  document.querySelectorAll('.campaign-tab').forEach(t => t.classList.remove('active'))
+  btn.classList.add('active')
+  showLoading()
+  loadAll()
+}
+
+async function loadStats() {
+  const res  = await fetch(`/api/stats?campaign=${currentCampaign}`)
+  const data = await res.json()
+  const t    = data.totals || {}
+  const cfg  = CAMPAIGNS[currentCampaign]
+
+  document.getElementById('sSent').textContent      = fmt(t.sent)
+  document.getElementById('sInitial').textContent   = `${fmt(t.initial_sent)} awaiting followup`
+  document.getElementById('sClicked').textContent   = fmt(t.clicked)
+  document.getElementById('sReplied').textContent   = fmt(t.replied)
+  document.getElementById('sReplyRate').textContent  = pct(t.replied, t.sent) + ' reply rate'
+  document.getElementById('sBounced').textContent   = fmt(t.bounced || 0)
+  document.getElementById('sBounceRate').textContent = pct(t.bounced || 0, t.sent) + ' bounce rate'
+  document.getElementById('lastUpdate').textContent  = 'Updated ' + new Date().toLocaleTimeString()
+
+  // Timeline chart
+  const days = {}, eventTypes = ['initial_sent', 'followup1_sent', 'followup2_sent']
+  ;(data.daily || []).forEach(r => {
+    if (!days[r.day]) days[r.day] = {}
+    days[r.day][r.event_type] = r.n
+  })
+  const labels = Object.keys(days).sort()
+  const colors = ['#00ff88', '#00d4ff', '#ffb800']
+
+  if (timelineChart) timelineChart.destroy()
+  timelineChart = new Chart(document.getElementById('timelineChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: eventTypes.map((et, i) => ({
+        label: et.replace(/_/g, ' '),
+        data: labels.map(d => (days[d] || {})[et] || 0),
+        backgroundColor: colors[i] + '33',
+        borderColor: colors[i],
+        borderWidth: 1,
+      })),
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#888', font: { size: 10 } } } },
+      scales: {
+        x: { ticks: { color: '#666', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,.04)' } },
+        y: { ticks: { color: '#666', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,.04)' } },
+      },
+    },
+  })
+
+  // Funnel chart
+  if (funnelChart) funnelChart.destroy()
+  funnelChart = new Chart(document.getElementById('funnelChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Sent', 'Clicked', 'Replied', 'Bounced'],
+      datasets: [{
+        data: [t.sent || 0, t.clicked || 0, t.replied || 0, t.bounced || 0],
+        backgroundColor: ['#00ff8844', '#00d4ff44', '#ffb80044', '#ff446644'],
+        borderColor:     ['#00ff88',   '#00d4ff',   '#ffb800',   '#ff4466'],
+        borderWidth: 2,
+      }],
+    },
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#666', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,.04)' } },
+        y: { ticks: { color: '#aaa', font: { size: 10 } }, grid: { display: false } },
+      },
+    },
+  })
+
+  // Tier breakdown
+  const byTier = data.by_tier || {}
+  const grid = document.getElementById('tierGrid')
+  grid.className = cfg.tiers.length === 1 ? 'tier-grid single-tier' : 'tier-grid'
+  grid.innerHTML = cfg.tiers.map(tier => {
+    const r = byTier[tier] || { total: 0, sent: 0, replied: 0, clicked: 0 }
+    const replyRate = r.sent > 0 ? (r.replied / r.sent * 100).toFixed(1) : 0
+    const col = cfg.tierColors[tier]
+    const cls = cfg.tierClasses[tier]
+    const displayName = tier === 'sal_shikum_tovplay' ? 'TovPlay סל שיקום' : tier === 'sal_shikum_tovtech' ? 'TovTech סל שיקום' : tier
+    return `
+      <div class="tier-card ${cls}">
+        <div class="tier-name">${displayName}</div>
+        <div class="tier-row"><span>Total</span><span class="tier-val">${fmt(r.total)}</span></div>
+        <div class="tier-row"><span>Sent</span><span class="tier-val">${fmt(r.sent)}</span></div>
+        <div class="tier-row"><span>Clicked</span><span class="tier-val">${fmt(r.clicked)}</span></div>
+        <div class="tier-row"><span>Replied</span><span class="tier-val">${fmt(r.replied)}</span></div>
+        <div class="tier-row"><span>Reply rate</span><span class="tier-val">${replyRate}%</span></div>
+        <div class="bar"><div class="bar-fill" style="width:${replyRate}%;background:${col}"></div></div>
+      </div>`
+  }).join('')
+
+  return t
+}
+
+async function loadContacts(tier = '', status = '', replied = '') {
+  let url = `/api/contacts?campaign=${currentCampaign}&limit=300`
+  if (tier)    url += `&tier=${tier}`
+  if (status)  url += `&status=${status}`
+  if (replied) url += `&replied=${replied}`
+  const contacts = await fetch(url).then(r => r.json())
+  renderTable(contacts)
+}
+
+function renderFilterTabs() {
+  const cfg = CAMPAIGNS[currentCampaign]
+  const container = document.getElementById('filterTabs')
+  container.innerHTML = cfg.filters.map((f, i) =>
+    `<button class="tab${i === 0 ? ' active' : ''}" onclick="filterTable(this,'${f.tier}','${f.status}','${f.replied}')">${f.label}</button>`
+  ).join('')
+
+  // Update table headers
+  document.getElementById('tableHead').innerHTML = cfg.tableHeaders
+}
+
+function filterTable(btn, tier, status, replied) {
+  document.querySelectorAll('.filter-tabs .tab').forEach(t => t.classList.remove('active'))
+  btn.classList.add('active')
+  loadContacts(tier, status, replied)
+}
+
+function renderTable(contacts) {
+  const cfg = CAMPAIGNS[currentCampaign]
+  const tbody = document.getElementById('contactsBody')
+  const colCount = currentCampaign.startsWith('sal_shikum') ? 6 : 7
+  if (!contacts.length) {
+    tbody.innerHTML = `<tr><td colspan="${colCount}" style="color:var(--dim);text-align:center;padding:2rem;">No contacts found</td></tr>`
+    return
+  }
+  tbody.innerHTML = contacts.map(c => cfg.renderRow(c)).join('')
+}
+
+async function loadCampaignCounts() {
+  // Load counts for campaign tabs
+  const [erasmus, tovplay, tovtech] = await Promise.all([
+    fetch('/api/stats?campaign=erasmus').then(r => r.json()).catch(() => ({ totals: {} })),
+    fetch('/api/stats?campaign=sal_shikum_tovplay').then(r => r.json()).catch(() => ({ totals: {} })),
+    fetch('/api/stats?campaign=sal_shikum_tovtech').then(r => r.json()).catch(() => ({ totals: {} })),
+  ])
+  const eCount = document.getElementById('countErasmus')
+  const pCount = document.getElementById('countTovplay')
+  const tCount = document.getElementById('countTovtech')
+  if (eCount) eCount.textContent = erasmus.totals?.sent ? `(${fmt(erasmus.totals.sent)})` : ''
+  if (pCount) pCount.textContent = tovplay.totals?.sent ? `(${fmt(tovplay.totals.sent)})` : ''
+  if (tCount) tCount.textContent = tovtech.totals?.sent ? `(${fmt(tovtech.totals.sent)})` : ''
+}
+
+async function loadAll() {
+  renderFilterTabs()
+  await Promise.all([loadStats(), loadContacts()])
+}
+
+async function init() {
+  await Promise.all([loadAll(), loadCampaignCounts()])
+  setInterval(() => { loadStats(); loadCampaignCounts() }, 60_000)
+}
+init()
+</script>
+</body>
+</html>

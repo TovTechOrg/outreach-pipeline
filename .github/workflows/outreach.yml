@@ -1,0 +1,100 @@
+name: TovPlay Outreach Pipeline
+
+on:
+  schedule:
+    # Primary: 07:23 UTC (10:23 Israel time)
+    - cron: '23 7 * * 1-5'
+    # Backup: 11:47 UTC (14:47 Israel time) — runs only if primary was skipped by GitHub
+    # Idempotency check in step6 prevents double-sending
+    - cron: '47 11 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Which step to run'
+        required: false
+        default: 'both'
+        type: choice
+        options:
+          - both
+          - step6-only
+          - step7-only
+          - dry-run
+
+jobs:
+  outreach:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install uv (fast package installer)
+        run: pip install uv --quiet
+
+      - name: Install dependencies
+        run: |
+          uv pip install --system --quiet \
+            pandas \
+            firebase-admin \
+            google-api-python-client \
+            google-auth-httplib2 \
+            google-auth-oauthlib \
+            google-generativeai
+
+      - name: Write Firebase service account
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > pipeline/firebase-service-account.json
+
+      - name: Write Gmail token
+        run: |
+          echo '${{ secrets.GMAIL_TOKEN_JSON }}' > pipeline/token.json
+
+      - name: Step 6 — Send emails (Erasmus+, 12 initial, no follow-ups)
+        id: step6
+        if: ${{ github.event.inputs.mode != 'step7-only' && github.event.inputs.mode != 'dry-run' }}
+        env:
+          SENDER_EMAIL:      ${{ secrets.SENDER_EMAIL }}
+          TRACKING_BASE_URL: ${{ secrets.TRACKING_BASE_URL }}
+        run: |
+          cd pipeline
+          python step6_send_emails.py
+
+      - name: Step 6 — Sal Shikum campaign (12 initial/day)
+        if: ${{ github.event.inputs.mode != 'step7-only' && github.event.inputs.mode != 'dry-run' }}
+        env:
+          SENDER_EMAIL:      ${{ secrets.SENDER_EMAIL }}
+          TRACKING_BASE_URL: ${{ secrets.TRACKING_BASE_URL }}
+        run: |
+          cd pipeline
+          python step6_send_emails.py --campaign sal_shikum_tovtech
+
+      - name: Step 6 — Dry run preview
+        if: ${{ github.event.inputs.mode == 'dry-run' }}
+        env:
+          SENDER_EMAIL:      ${{ secrets.SENDER_EMAIL }}
+          TRACKING_BASE_URL: ${{ secrets.TRACKING_BASE_URL }}
+        run: |
+          cd pipeline
+          python step6_send_emails.py --dry-run
+          python step6_send_emails.py --campaign sal_shikum_tovtech --dry-run
+
+      - name: Daily summary email
+        if: always() && steps.step6.outputs.had_activity != 'false'
+        env:
+          SENDER_EMAIL:      ${{ secrets.SENDER_EMAIL }}
+          TRACKING_BASE_URL: ${{ secrets.TRACKING_BASE_URL }}
+          NOTIFY_EMAIL:      ${{ secrets.NOTIFY_EMAIL }}
+        run: |
+          cd pipeline
+          python step_summary.py
+
+      - name: Cleanup secrets
+        if: always()
+        run: |
+          rm -f pipeline/firebase-service-account.json pipeline/token.json

@@ -1,0 +1,33 @@
+# Secrets & credentials
+.env
+pipeline/token.json
+pipeline/credentials.json
+pipeline/firebase-service-account.json
+
+# Data files (large CSVs, checkpoints)
+data/
+*.csv
+*.json.bak
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+
+# Node / Wrangler
+node_modules/
+.wrangler/
+.dev.vars
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp

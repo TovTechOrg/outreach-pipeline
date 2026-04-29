@@ -1,0 +1,15 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // All reads and writes require a valid Firebase service account.
+    // The dashboard (Cloudflare Workers) uses a service account with
+    // the "Cloud Datastore User" IAM role.
+    // step6_send_emails.py uses the same service account.
+    // No public access is allowed.
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
