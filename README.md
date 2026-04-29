@@ -6,6 +6,21 @@ A fully automated B2B outreach engine built for Erasmus+ partnership prospecting
 
 ---
 
+## Recommended: guided setup with Claude Code
+
+The fastest way to get up and running is with the built-in setup wizard. If you have [Claude Code](https://claude.ai/code) installed:
+
+```bash
+# Open this project in Claude Code, then run:
+/setup
+```
+
+The `/setup` skill walks you through every step interactively — it asks for your details, edits the config files, runs the auth flows, deploys the dashboard, and configures GitHub Actions secrets, one step at a time. No need to read the docs first.
+
+> Don't have Claude Code? Follow the [manual setup instructions](#quick-start) below.
+
+---
+
 ## What it does
 
 ```
