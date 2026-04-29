@@ -4,28 +4,45 @@ The pipeline sends emails through the Gmail API using OAuth2. This is a one-time
 
 ---
 
-## Step 1: Create a Google Cloud project
+## Step 1: Create a Google Cloud project and enable the Gmail API
 
-1. Go to [console.cloud.google.com](https://console.cloud.google.com)
-2. Create a new project (e.g. `bizdev-outreach`)
-3. In the left menu, go to **APIs & Services → Library**
-4. Search for **Gmail API** and click **Enable**
+**Using the CLI (recommended):**
+
+Install the [Google Cloud CLI](https://cloud.google.com/sdk/docs/install) if you haven't, then:
+
+```bash
+# Authenticate
+gcloud auth login
+
+# Create a new project
+gcloud projects create bizdev-outreach --name="BizDev Outreach"
+
+# Set it as the active project
+gcloud config set project bizdev-outreach
+
+# Enable the Gmail API
+gcloud services enable gmail.googleapis.com
+```
+
+**Alternative — browser:**
+Go to [console.cloud.google.com](https://console.cloud.google.com), create a new project, then go to **APIs & Services → Library** → search "Gmail API" → **Enable**.
 
 ---
 
 ## Step 2: Create OAuth 2.0 credentials
 
-1. Go to **APIs & Services → Credentials**
-2. Click **Create Credentials → OAuth client ID**
-3. If prompted, configure the OAuth consent screen first:
+This step requires the browser — there is no CLI for creating OAuth Desktop credentials.
+
+1. Go to [console.cloud.google.com](https://console.cloud.google.com) → **APIs & Services → OAuth consent screen**:
    - User Type: **External**
    - App name: anything (e.g. `Outreach Pipeline`)
-   - Add your sender email as a test user
+   - Add your sender email as a **test user**
    - Scopes: add `https://www.googleapis.com/auth/gmail.send` and `https://www.googleapis.com/auth/gmail.readonly`
-4. Back in Credentials → Create OAuth client ID:
+   - Save and continue through all screens
+2. Go to **APIs & Services → Credentials → Create Credentials → OAuth client ID**:
    - Application type: **Desktop app**
-   - Name: anything
-5. Download the JSON file → save it as `pipeline/credentials.json`
+   - Download the JSON file
+3. Save the downloaded file as `pipeline/credentials.json`
 
 ---
 
@@ -36,7 +53,7 @@ cd pipeline
 python gmail_auth.py
 ```
 
-This opens a browser window. Log in with your sender Gmail account and grant the requested permissions. On success, `token.json` is created in the `pipeline/` directory.
+This opens a browser window. Log in with your sender Gmail account and click **Allow**. On success, `pipeline/token.json` is created.
 
 > **Note:** `token.json` contains your OAuth refresh token. Keep it secret and never commit it.
 
@@ -55,18 +72,16 @@ This sends a test email to `NOTIFY_EMAIL`. Check your inbox.
 
 ## Step 5: Add to GitHub Actions secrets
 
-After the OAuth flow, copy the contents of `pipeline/token.json`:
+**Using the CLI (recommended):**
+
+Install the [GitHub CLI](https://cli.github.com) if you haven't, then from the project root:
 
 ```bash
-cat pipeline/token.json
+gh secret set GMAIL_TOKEN_JSON < pipeline/token.json
 ```
 
-Go to your GitHub repo → **Settings → Secrets and variables → Actions → New repository secret**:
-
-- Name: `GMAIL_TOKEN_JSON`
-- Value: the full JSON content
-
-The GitHub Actions workflow writes this back to `pipeline/token.json` at runtime.
+**Alternative — browser:**
+Go to your GitHub repo → **Settings → Secrets and variables → Actions → New repository secret**, name it `GMAIL_TOKEN_JSON`, and paste the contents of `pipeline/token.json`.
 
 ---
 
@@ -84,7 +99,7 @@ The pipeline defaults to 20 emails/day (`DAILY_LIMIT` in `config.py`), well with
 ## Troubleshooting
 
 **"Token has been expired or revoked"**
-Run `python gmail_auth.py` again to refresh the token, then update the `GMAIL_TOKEN_JSON` secret.
+Run `python gmail_auth.py` again, then update the secret: `gh secret set GMAIL_TOKEN_JSON < pipeline/token.json`
 
 **"Access blocked: app has not completed Google verification"**
 While in test mode, only users listed as test users can authorize. Add yourself under OAuth consent screen → Test users.

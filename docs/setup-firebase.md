@@ -6,36 +6,48 @@ Firestore is the database that stores all prospects, tracking events, and campai
 
 ## Step 1: Create a Firebase project
 
-1. Go to [console.firebase.google.com](https://console.firebase.google.com)
-2. Click **Add project**
-3. Give it a name (e.g. `bizdev-outreach`)
-4. Disable Google Analytics (not needed)
-5. Click **Create project**
+**Using the CLI (recommended):**
 
----
-
-## Step 2: Enable Firestore
-
-1. In the Firebase console, go to **Build → Firestore Database**
-2. Click **Create database**
-3. Choose **Start in production mode** (we'll apply rules next)
-4. Pick a region close to you (e.g. `europe-west1` for Europe)
-
----
-
-## Step 3: Deploy security rules and indexes
-
-Install the Firebase CLI if you haven't:
+Install [Firebase CLI](https://firebase.google.com/docs/cli) if you haven't:
 
 ```bash
 npm install -g firebase-tools
 firebase login
 ```
 
-From the project root:
+Then create the project:
 
 ```bash
-firebase use --add  # select your project
+firebase projects:create bizdev-outreach --display-name "BizDev Outreach"
+```
+
+**Alternative — browser:**
+Go to [console.firebase.google.com](https://console.firebase.google.com) → **Add project**, give it a name, disable Google Analytics, and click **Create project**.
+
+---
+
+## Step 2: Enable Firestore
+
+**Using the CLI (recommended):**
+
+```bash
+# Link your local project to Firebase
+firebase use bizdev-outreach
+
+# Create the Firestore database
+# Replace europe-west1 with a region close to you
+# Other options: us-central, asia-east1
+firebase firestore:databases:create --location=europe-west1
+```
+
+**Alternative — browser:**
+In the Firebase console → **Build → Firestore Database → Create database** → production mode → pick a region.
+
+---
+
+## Step 3: Deploy security rules and indexes
+
+```bash
 firebase deploy --only firestore:rules,firestore:indexes
 ```
 
@@ -43,14 +55,31 @@ This applies `firestore.rules` (restricts writes to authenticated service accoun
 
 ---
 
-## Step 4: Create a service account
+## Step 4: Create a service account key
 
 The pipeline needs a service account key to write to Firestore from Python and from GitHub Actions.
 
-1. Go to [console.firebase.google.com](https://console.firebase.google.com) → **Project settings** (gear icon)
-2. Click the **Service accounts** tab
-3. Click **Generate new private key**
-4. Download the JSON file → save as `pipeline/firebase-service-account.json`
+**Using the CLI (recommended):**
+
+```bash
+PROJECT_ID=bizdev-outreach
+
+# Find the Firebase Admin service account (created automatically with the project)
+SA_EMAIL=$(gcloud iam service-accounts list \
+  --project=$PROJECT_ID \
+  --filter="displayName:firebase-adminsdk" \
+  --format="value(email)")
+
+echo "Service account: $SA_EMAIL"
+
+# Download the key
+gcloud iam service-accounts keys create pipeline/firebase-service-account.json \
+  --iam-account=$SA_EMAIL \
+  --project=$PROJECT_ID
+```
+
+**Alternative — browser:**
+Go to [console.firebase.google.com](https://console.firebase.google.com) → **Project settings** (gear icon) → **Service accounts** tab → **Generate new private key** → download the JSON and save it as `pipeline/firebase-service-account.json`.
 
 > **Keep this file secret.** It grants write access to your entire Firestore database.
 
@@ -58,16 +87,14 @@ The pipeline needs a service account key to write to Firestore from Python and f
 
 ## Step 5: Add to GitHub Actions secrets
 
-Copy the full contents of the service account JSON:
+**Using the CLI (recommended):**
 
 ```bash
-cat pipeline/firebase-service-account.json
+gh secret set FIREBASE_SERVICE_ACCOUNT < pipeline/firebase-service-account.json
 ```
 
-Go to GitHub → **Settings → Secrets → Actions → New repository secret**:
-
-- Name: `FIREBASE_SERVICE_ACCOUNT`
-- Value: the full JSON content
+**Alternative — browser:**
+Go to GitHub → **Settings → Secrets → Actions → New repository secret**, name it `FIREBASE_SERVICE_ACCOUNT`, and paste the file contents.
 
 ---
 
