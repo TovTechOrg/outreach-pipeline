@@ -4,6 +4,6 @@
     "indexes": "firestore.indexes.json"
   },
   "projects": {
-    "default": "tovtech-outreach-969f3"
+    "default": "your-firebase-project-id"
   }
 }

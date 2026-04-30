@@ -1,4 +1,4 @@
-# TovPlay BizDev — Python dependencies
+# Python dependencies
 # Install: py -m pip install -r requirements.txt
 
 # Google APIs

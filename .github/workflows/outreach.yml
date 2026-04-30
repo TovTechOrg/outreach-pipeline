@@ -1,12 +1,6 @@
 name: Outreach Pipeline
 
 on:
-  schedule:
-    # Primary: 07:23 UTC
-    - cron: '23 7 * * 1-5'
-    # Backup: 11:47 UTC — runs only if primary was skipped by GitHub
-    # Idempotency check in step6 prevents double-sending
-    - cron: '47 11 * * 1-5'
   workflow_dispatch:
     inputs:
       mode:
