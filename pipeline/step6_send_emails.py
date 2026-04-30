@@ -892,6 +892,32 @@ def main():
         n = 0
     print(f"  Sent: {n}\n")
 
+    # 4. Followup 2 (max DAILY_FOLLOWUP/day, never exceed DAILY_LIMIT total)
+    followup_quota = min(DAILY_FOLLOWUP, DAILY_LIMIT - sent_today)
+    print(f"─── Followup 2 (Day {FOLLOWUP2_DAYS}, quota: {followup_quota}) ───")
+    if followup_quota > 0:
+        n = send_followups(db, service, "followup2", FOLLOWUP2_DAYS,
+                           tier_filter, dry_run, max_send=followup_quota,
+                           campaign=campaign_arg)
+        sent_today += n
+    else:
+        print("  Skipped — daily limit reached")
+        n = 0
+    print(f"  Sent: {n}\n")
+
+    # 5. Followup 3 — breakup (max DAILY_FOLLOWUP/day, never exceed DAILY_LIMIT total)
+    followup_quota = min(DAILY_FOLLOWUP, DAILY_LIMIT - sent_today)
+    print(f"─── Followup 3 — breakup (Day {FOLLOWUP3_DAYS}, quota: {followup_quota}) ───")
+    if followup_quota > 0:
+        n = send_followups(db, service, "followup3", FOLLOWUP3_DAYS,
+                           tier_filter, dry_run, max_send=followup_quota,
+                           campaign=campaign_arg)
+        sent_today += n
+    else:
+        print("  Skipped — daily limit reached")
+        n = 0
+    print(f"  Sent: {n}\n")
+
     # Summary from Firebase
     stats_col = f"{campaign_arg}_stats" if campaign_arg != "main" else "stats"
     global_stats = db.collection(stats_col).document("global").get().to_dict() or {}

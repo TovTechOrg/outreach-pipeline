@@ -84,8 +84,20 @@ jobs:
           cd pipeline
           python step6_send_emails.py --dry-run
 
+      - name: Step 7 — AI reply handler
+        id: step7
+        if: ${{ github.event.inputs.mode != 'step6-only' && github.event.inputs.mode != 'dry-run' }}
+        env:
+          SENDER_EMAIL:      ${{ secrets.SENDER_EMAIL }}
+          TRACKING_BASE_URL: ${{ secrets.TRACKING_BASE_URL }}
+          NOTIFY_EMAIL:      ${{ secrets.NOTIFY_EMAIL }}
+          GEMINI_API_KEY:    ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          cd pipeline
+          python step7_ai_replies.py
+
       - name: Daily summary email
-        if: always() && steps.step6.outputs.had_activity != 'false'
+        if: always() && github.event.inputs.mode != 'dry-run' && steps.step6.outputs.had_activity != 'false'
         env:
           SENDER_EMAIL:      ${{ secrets.SENDER_EMAIL }}
           TRACKING_BASE_URL: ${{ secrets.TRACKING_BASE_URL }}
